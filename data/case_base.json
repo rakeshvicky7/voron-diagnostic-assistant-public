@@ -1,0 +1,890 @@
+[
+ {
+  "id": "P01",
+  "text": "During prints the filament suddenly stops feeding, sometimes after 5 minutes, sometimes after 5 hours. The filament end comes out swollen, like it melted and cooled inside the hotend. The hotend temperature looks normal.",
+  "part": "hotend_fan",
+  "ok": [
+   "hotend_fan"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P02",
+  "text": "The hotend temperature reading spikes up and down by a lot for a moment, then comes back. The heater itself seems fine.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "hotend_thermistor",
+   "umbilical_wiring"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P03",
+  "text": "Every print is under-extruded, but only on the front side of the bed. There the extruder clicks and skips; at the back it prints fine.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "extruder_motor",
+   "umbilical_wiring"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P04",
+  "text": "My new prints look under-extruded: thin layers with gaps. I recently set up the configuration.",
+  "part": "firmware_config_macros",
+  "ok": [
+   "firmware_config_macros"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P05",
+  "text": "The printer randomly freezes in the middle of a print. Klipper and the Raspberry Pi stop responding and the print halts.",
+  "part": "host_computer",
+  "ok": [
+   "host_computer"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P06",
+  "text": "Klipper keeps shutting down with heater errors during prints. Sometimes the hotend temperature drops suddenly.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "hotend_thermistor",
+   "umbilical_wiring"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P07",
+  "text": "When a print starts the nozzle is about 5 mm above the bed, even after I calibrated the Z endstop.",
+  "part": "firmware_config_macros",
+  "ok": [
+   "firmware_config_macros",
+   "z_endstop"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P08",
+  "text": "My print splits at a certain height: some layers come out thin and weak, then it continues.",
+  "part": "filament_material",
+  "ok": [
+   "filament_material"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P09",
+  "text": "I get layer shifts in X and Y after I replaced the belts.",
+  "part": "xy_belts",
+  "ok": [
+   "xy_belts"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P10",
+  "text": "There is a strange scraping noise when the toolhead moves, and the belt does not run straight at one drive.",
+  "part": "xy_pulleys_idlers",
+  "ok": [
+   "xy_belts",
+   "xy_motors_drivers",
+   "xy_pulleys_idlers"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P11",
+  "text": "The belt moves up and rubs at the B drive corner while the head moves.",
+  "part": "xy_pulleys_idlers",
+  "ok": [
+   "xy_belts",
+   "xy_pulleys_idlers"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P12",
+  "text": "Klipper randomly shuts down mid-print with 'Heater extruder not heating at expected rate'.",
+  "part": "firmware_config_macros",
+  "ok": [
+   "firmware_config_macros",
+   "hotend_heater",
+   "part_cooling_fan"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P13",
+  "text": "My prints have a regular wobble in the layer height, a repeating wave on the walls.",
+  "part": "bed_plate_carrier",
+  "ok": [
+   "bed_plate_carrier"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P14",
+  "text": "When the bed moves down there is a loud groaning noise from the back of the printer.",
+  "part": "z_motor_leadscrew",
+  "ok": [
+   "z_motor_leadscrew"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "P15",
+  "text": "During prints Klipper stops with 'Lost communication with MCU' for the toolhead board.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "umbilical_wiring"
+  ],
+  "split": "dev",
+  "set": "practice"
+ },
+ {
+  "id": "R01",
+  "text": "When homing X or Y the toolhead reaches the end but sometimes jumps once sideways before stopping; worse at higher acceleration.",
+  "part": "xy_motors_drivers",
+  "ok": [
+   "xy_motors_drivers"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R02",
+  "text": "Prints stop at random heights with a 'move out of range' error.",
+  "part": "firmware_config_macros",
+  "ok": [
+   "filament_runout_sensor",
+   "firmware_config_macros"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R03",
+  "text": "Klipper refuses to start; error says a pin is reserved for SPI.",
+  "part": "hotend_thermistor",
+  "ok": [
+   "firmware_config_macros",
+   "hotend_thermistor"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R04",
+  "text": "Long prints fail halfway with 'lost communication with mcu'; short prints are fine; only power cycling recovers.",
+  "part": "power_supply",
+  "ok": [
+   "host_computer",
+   "power_supply"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R05",
+  "text": "First layer good at the front but clearly too high at the back, even after bed mesh.",
+  "part": "bed_plate_carrier",
+  "ok": [
+   "bed_plate_carrier",
+   "z_rails"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R06",
+  "text": "Cold printer shows hotend about 15 degrees above room temperature.",
+  "part": "hotend_thermistor",
+  "ok": [
+   "hotend_thermistor"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R07",
+  "text": "Loud knocking noise each time the toolhead changes direction; prints look fine.",
+  "part": "extruder_motor",
+  "ok": [
+   "extruder_gears_guidler",
+   "extruder_motor"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R08",
+  "text": "Both part cooling fans turn a few times, stop, and repeat; hotend fan is fine.",
+  "part": "part_cooling_fan",
+  "ok": [
+   "part_cooling_fan"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R09",
+  "text": "After restart the printer treats wherever the toolhead is as the home position.",
+  "part": "xy_motors_drivers",
+  "ok": [
+   "xy_motors_drivers"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R10",
+  "text": "First layer has a band of bad squish along X near the front; alternate lines differ in height.",
+  "part": "x_linear_rail",
+  "ok": [
+   "toolhead",
+   "x_linear_rail"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R11",
+  "text": "Hotend temperature graph shows sudden spikes and dips; prints sometimes stop with temperature errors.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "hotend_thermistor",
+   "umbilical_wiring"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R12",
+  "text": "Horizontal bands on only one face of a test cube; follows printer orientation.",
+  "part": "slicer_settings",
+  "ok": [
+   "slicer_settings"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R13",
+  "text": "Neither controller board starts (no green LEDs) unless reset buttons are pressed.",
+  "part": "host_computer",
+  "ok": [
+   "host_computer",
+   "power_supply"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "R14",
+  "text": "None of the toolhead fans spin, although continuity is fine and the MCU fan works.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "hotend_fan",
+   "part_cooling_fan",
+   "umbilical_wiring"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C01",
+  "text": "Every print looks thin and weak; walls have gaps; top layers not closed.",
+  "part": "extruder_motor",
+  "ok": [
+   "extruder_gears_guidler",
+   "extruder_motor"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C02",
+  "text": "Printer stops shortly after heating starts with 'ADC out of range' for the hotend.",
+  "part": "hotend_thermistor",
+  "ok": [
+   "hotend_thermistor",
+   "umbilical_wiring"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C03",
+  "text": "Hotend heats very slowly then printer stops with 'heater not heating at expected rate'.",
+  "part": "hotend_heater",
+  "ok": [
+   "hotend_heater"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C04",
+  "text": "Bed temperature reads a nonsense value and Klipper shuts down when the bed is turned on.",
+  "part": "bed_thermistor",
+  "ok": [
+   "bed_thermistor"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C05",
+  "text": "Bed never warms up; prints come loose; bed temperature stays at room temperature.",
+  "part": "bed_heater",
+  "ok": [
+   "bed_heater",
+   "controller_board"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C06",
+  "text": "First layer is laid down from too high and does not stick anywhere on the bed.",
+  "part": "z_endstop",
+  "ok": [
+   "z_endstop"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C07",
+  "text": "First layer height changes from print to print without any setting change.",
+  "part": "z_endstop",
+  "ok": [
+   "z_endstop"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C08",
+  "text": "Layers shift diagonally partway through prints; parts measure wrong in one diagonal.",
+  "part": "xy_belts",
+  "ok": [
+   "xy_belts"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C09",
+  "text": "Random layer shifts in one direction, more at high speed; clicking near a motor.",
+  "part": "xy_pulleys_idlers",
+  "ok": [
+   "xy_belts",
+   "xy_pulleys_idlers"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C10",
+  "text": "Layer shifts only on fast moves or high acceleration.",
+  "part": "xy_motors_drivers",
+  "ok": [
+   "xy_motors_drivers"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C11",
+  "text": "Overhangs droop and bridges sag; small details melt.",
+  "part": "part_cooling_fan",
+  "ok": [
+   "part_cooling_fan",
+   "umbilical_wiring"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C12",
+  "text": "Printing starts fine, then after some minutes extrusion stops and the extruder clicks.",
+  "part": "hotend_fan",
+  "ok": [
+   "heatbreak_ptfe",
+   "hotend_fan"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C13",
+  "text": "Lines are thin and patchy across all prints; filament comes out curling.",
+  "part": "nozzle",
+  "ok": [
+   "nozzle"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C14",
+  "text": "Under-extrusion starts after the enclosure gets warm; filament shows little bite marks.",
+  "part": "extruder_gears_guidler",
+  "ok": [
+   "extruder_gears_guidler",
+   "extruder_motor"
+  ],
+  "split": "dev",
+  "set": "test_A"
+ },
+ {
+  "id": "C15",
+  "text": "When loading filament the extruder pulls it back out instead of feeding it in.",
+  "part": "extruder_motor",
+  "ok": [
+   "extruder_motor"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C16",
+  "text": "On homing Z the bed moves the wrong way and grinds at the end.",
+  "part": "z_motor_leadscrew",
+  "ok": [
+   "z_motor_leadscrew"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C17",
+  "text": "First layer squished on one side and too thin on the other.",
+  "part": "bed_plate_carrier",
+  "ok": [
+   "bed_plate_carrier"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C18",
+  "text": "Regular horizontal lines on all walls at the same height spacing.",
+  "part": "z_motor_leadscrew",
+  "ok": [
+   "z_motor_leadscrew",
+   "z_rails"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C19",
+  "text": "Klipper will not start after a fresh setup; config error about the extruder sensor.",
+  "part": "hotend_thermistor",
+  "ok": [
+   "firmware_config_macros",
+   "hotend_thermistor"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C20",
+  "text": "Hotend temperature swings up and down by several degrees during prints.",
+  "part": "hotend_heater",
+  "ok": [
+   "firmware_config_macros",
+   "hotend_heater"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C21",
+  "text": "Ghost echoes next to sharp corners and letters.",
+  "part": "toolhead",
+  "ok": [
+   "firmware_config_macros",
+   "toolhead"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C22",
+  "text": "Trying to load filament, the extruder refuses to move and shows an error.",
+  "part": "firmware_config_macros",
+  "ok": [
+   "extruder_motor",
+   "firmware_config_macros",
+   "hotend_heater"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C23",
+  "text": "Printing ABS at 260 C fails; printer shuts down saying the extruder is above its maximum.",
+  "part": "firmware_config_macros",
+  "ok": [
+   "firmware_config_macros",
+   "hotend_heater",
+   "hotend_thermistor"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C24",
+  "text": "On homing X the toolhead hits the end and keeps grinding without stopping.",
+  "part": "controller_board",
+  "ok": [
+   "controller_board",
+   "xy_motors_drivers"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C25",
+  "text": "Stringing and occasional jams; molten plastic leaks near the top of the hotend.",
+  "part": "heatbreak_ptfe",
+  "ok": [
+   "heatbreak_ptfe"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C26",
+  "text": "Hotend fan, part fan and temperature all cut out at the same time, intermittently.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "umbilical_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C27",
+  "text": "Prints pause by themselves even though filament is still loaded.",
+  "part": "filament_runout_sensor",
+  "ok": [
+   "filament_runout_sensor"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "C28",
+  "text": "Popping sounds while printing, rough surface and lots of stringing with a new spool.",
+  "part": "filament_material",
+  "ok": [
+   "filament_material"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R15",
+  "text": "During fast travel moves the print pauses by itself at random points, although filament is still loaded.",
+  "part": "filament_runout_sensor",
+  "ok": [
+   "filament_runout_sensor",
+   "firmware_config_macros"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R16",
+  "text": "Strong ghosting on prints that input shaping cannot remove; the Y resonance chart shows a large spike that looks like it belongs to X.",
+  "part": "x_linear_rail",
+  "ok": [
+   "x_linear_rail",
+   "y_linear_rails"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R17",
+  "text": "Sometimes when the hotend starts heating the whole power supply switches off and the printer restarts.",
+  "part": "hotend_heater",
+  "ok": [
+   "hotend_heater",
+   "umbilical_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R18",
+  "text": "After about 100 hours, toolhead functions drop out at random: the hotend temperature reading jumps and the hotend fan stops when the head moves.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "hotend_fan",
+   "hotend_thermistor",
+   "umbilical_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R19",
+  "text": "Layer shifts appear late in the print, and the X/Y motors are very hot to the touch.",
+  "part": "slicer_settings",
+  "ok": [
+   "firmware_config_macros",
+   "slicer_settings",
+   "xy_motors_drivers"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R20",
+  "text": "When homing or jogging one axis the other axis also moves; prints come out skewed and the head crashes into the frame.",
+  "part": "xy_motors_drivers",
+  "ok": [
+   "firmware_config_macros",
+   "xy_motors_drivers"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R21",
+  "text": "X shows strong ringing and a much worse resonance result than Y.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "toolhead",
+   "umbilical_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R22",
+  "text": "On the first heat-up the extruder jams and the hotend mounting adapter has melted.",
+  "part": "hotend_fan",
+  "ok": [
+   "heatbreak_ptfe",
+   "hotend_fan",
+   "umbilical_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R23",
+  "text": "Z homes once, moves away from the switch, then makes a loud ratcheting noise and will not move further; it grinds after a few millimetres.",
+  "part": "z_motor_leadscrew",
+  "ok": [
+   "firmware_config_macros",
+   "z_motor_leadscrew",
+   "z_rails"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R24",
+  "text": "Print stopped mid-way; afterwards the extruder makes a loud rattle and the gears only twitch back and forth instead of turning.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "extruder_motor",
+   "umbilical_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R25",
+  "text": "Z homing fails with 'endstop z still triggered after retract'; the motor sounds like it is turning but the bed does not move up off the switch.",
+  "part": "z_rails",
+  "ok": [
+   "z_endstop",
+   "z_motor_leadscrew",
+   "z_rails"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R26",
+  "text": "At start-up X homing fails with 'No trigger on x after full movement' and the head keeps pushing into the rear right corner.",
+  "part": "firmware_config_macros",
+  "ok": [
+   "firmware_config_macros",
+   "xy_motors_drivers"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R27",
+  "text": "About two out of three prints stop with driver errors: extruder 'reset' and X or Y 'undervoltage' GSTAT messages, usually 30+ minutes into the print.",
+  "part": "power_supply",
+  "ok": [
+   "controller_board",
+   "extruder_motor",
+   "power_supply"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R28",
+  "text": "Prints fail with hotend 'temperature out of range' errors; the temperature graph shows sharp dips and spikes even after replacing heater and thermistor.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "hotend_thermistor",
+   "umbilical_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R29",
+  "text": "The extruder cannot grip the filament: filament slides through and gets no teeth marks even with full tension.",
+  "part": "extruder_gears_guidler",
+  "ok": [
+   "extruder_gears_guidler",
+   "extruder_motor"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "R30",
+  "text": "Input-shaper calibration does not work: the accelerometer on the umbilical board gives no usable measurement.",
+  "part": "host_computer",
+  "ok": [
+   "firmware_config_macros",
+   "host_computer",
+   "umbilical_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_B"
+ },
+ {
+  "id": "H01",
+  "text": "Prints keep stopping with 'Heater extruder not heating at expected rate'. I already replaced the whole extruder unit and it still happens.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "hotend_heater",
+   "umbilical_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_C"
+ },
+ {
+  "id": "H02",
+  "text": "The hotend heater randomly cuts out during prints and Klipper stops with 'heater extruder not heating at expected rate'.",
+  "part": "umbilical_wiring",
+  "ok": [
+   "hotend_heater",
+   "umbilical_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_C"
+ },
+ {
+  "id": "H03",
+  "text": "Klipper shuts down with 'ADC out of range'. I changed the heater cartridge but nothing changed.",
+  "part": "hotend_thermistor",
+  "ok": [
+   "hotend_thermistor",
+   "umbilical_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_C"
+ },
+ {
+  "id": "H04",
+  "text": "Since I replaced the mainboard I get 'heater_bed not heating at expected rate' and the bed stays cold.",
+  "part": "bed_heater",
+  "ok": [
+   "bed_heater",
+   "controller_board",
+   "dc_power_wiring"
+  ],
+  "split": "heldout",
+  "set": "test_C"
+ },
+ {
+  "id": "H05",
+  "text": "My new build under-extrudes; walls are thin and have gaps even after calibrating.",
+  "part": "extruder_gears_guidler",
+  "ok": [
+   "extruder_gears_guidler",
+   "extruder_motor"
+  ],
+  "split": "heldout",
+  "set": "test_C"
+ },
+ {
+  "id": "H06",
+  "text": "Since I added bed mesh the nozzle digs into the bed at the start of the print, and in the wrong place.",
+  "part": "firmware_config_macros",
+  "ok": [
+   "firmware_config_macros"
+  ],
+  "split": "heldout",
+  "set": "test_C"
+ },
+ {
+  "id": "H07",
+  "text": "There is a strange vibration and buzzing noise on Y moves, and the extrusion looks bad too.",
+  "part": "firmware_config_macros",
+  "ok": [
+   "firmware_config_macros",
+   "xy_belts",
+   "xy_motors_drivers"
+  ],
+  "split": "heldout",
+  "set": "test_C"
+ },
+ {
+  "id": "H08",
+  "text": "When I push the gantry by hand along Y it feels tight and catches in places.",
+  "part": "y_linear_rails",
+  "ok": [
+   "xy_pulleys_idlers",
+   "y_linear_rails"
+  ],
+  "split": "heldout",
+  "set": "test_C"
+ },
+ {
+  "id": "H09",
+  "text": "The temperature readings are wrong, the hotend shows a value far from the real temperature even when cold.",
+  "part": "hotend_thermistor",
+  "ok": [
+   "bed_thermistor",
+   "hotend_thermistor"
+  ],
+  "split": "heldout",
+  "set": "test_C"
+ }
+]

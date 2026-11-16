@@ -1,0 +1,23 @@
+[
+ {"id": "H19", "part": "z_rails", "ok": ["z_rails", "z_motor_leadscrew"], "evidence": "high (poster realigned the rails, works)", "machine": "Voron 0.2",
+  "source": "https://forum.vorondesign.com/threads/endstop-z-still-triggered-after-retract-ldo-0-2-kit.1657/", "cause": "Z rails out of alignment at the bottom, bed binds",
+  "opener": "When homing Z the bed fails to retract and I get the error 'Endstop z still triggered after retract'. I can hear the switch click and the bed stops, the motor makes the right noise as though it tries to retract but nothing happens. With the motor off I can wind it by hand and it moves normally."},
+ {"id": "H20", "part": "hotend_heater", "ok": ["hotend_heater", "umbilical_wiring"], "evidence": "high (thread marked Solved)", "machine": "Voron 0",
+  "source": "https://forum.vorondesign.com/threads/setting-the-revo-hotend-temp-sometimes-causes-a-powercycle.233/", "cause": "heater wire broke off at the hotend connector",
+  "opener": "Sometimes when the hotend temperature is set to start heating, the power supply seems to go into a failsafe restart, as if it detects a short. It happens whether or not the bed is heating. If I unclip and reclip the connector of the hotend cable it seems to work again for a while."},
+ {"id": "H21", "part": "umbilical_wiring", "ok": ["umbilical_wiring", "hotend_thermistor"], "evidence": "high (thread marked Solved)", "machine": "Voron Trident",
+  "source": "https://forum.vorondesign.com/threads/extruder-temp-spikes.809/", "cause": "cracked connector of the thermistor at the toolhead board",
+  "opener": "It was printing fine, but all of a sudden the hotend temperature reading randomly spikes to 600 C and then I get an error. The temperature does not really reach that. I made sure there is no broken wire, and the same hotend works without spikes on my other printer."},
+ {"id": "H22", "part": "firmware_config_macros", "ok": ["firmware_config_macros", "controller_board"], "evidence": "high (poster: newer firmware fixed it)", "machine": "Voron 0.1",
+  "source": "https://forum.vorondesign.com/threads/no-stepper_buzz-stepper-stepper_z-activities.1156/", "cause": "firmware version",
+  "opener": "The lead screw for the Z axis is not moving during homing. X and Y work fine. The Z motor only goes into hold at the end of the homing and does not buzz in the stepper test. The endstops read correctly."},
+ {"id": "H23", "part": "x_linear_rail", "ok": ["x_linear_rail"], "evidence": "high (new rail fixed it, two more owners confirmed)", "machine": "Voron 0.1",
+  "source": "https://forum.vorondesign.com/threads/irregular-first-layer.404/", "cause": "X rail carriage has play (preload too low), toolhead rocks",
+  "opener": "My first layer is irregular in a band that runs across X near the front of the bed. In that band every other line is squished well and every other line bulges up, depending on the direction the head moves. The middle of the bed prints fine. The bed is clean and level and the extruder is calibrated."},
+ {"id": "H24", "part": "firmware_config_macros", "ok": ["firmware_config_macros", "z_motor_leadscrew", "z_rails"], "evidence": "medium (poster: works after raising the Z motor current; an advisor suspected binding rails)", "machine": "Voron 0.2",
+  "source": "https://forum.vorondesign.com/threads/new-build-z-axis-issues.1665/", "cause": "Z motor run_current too low",
+  "opener": "New build. The Z stepper moves down, contacts the Z endstop, moves away from it, then makes a terrible ratcheting sound and will not move anymore. I can command it 1 mm at a time for 5 or 10 mm, then it just grinds."},
+ {"id": "H25", "part": "heatbreak_ptfe", "ok": ["heatbreak_ptfe", "hotend_fan"], "evidence": "medium (poster: fixed by changing the hotend; staff: small heatsink needs more airflow)", "machine": "Voron 2.4",
+  "source": "https://forum.vorondesign.com/threads/heatcreep-stealthburner-dragon-hf.1570/", "cause": "heat creep in the hotend at low print speeds",
+  "opener": "Prints are perfect, but after 1-2 hours of printing the nozzle gets clogged. When I heat the hotend I can push the filament through by hand and it is unclogged again. The hotend fan is running and the filament tube has no kinks."}
+]

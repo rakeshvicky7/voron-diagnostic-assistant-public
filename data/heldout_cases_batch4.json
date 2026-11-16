@@ -1,0 +1,23 @@
+[
+ {"id": "H26", "part": "umbilical_wiring", "ok": ["umbilical_wiring", "extruder_motor"], "evidence": "high (thread marked Solved; bypass loom fixed it)", "machine": "Voron 2.4",
+  "source": "https://forum.vorondesign.com/threads/underextrusion-but-only-on-the-front-side-of-every-print.1979/", "cause": "broken wire of the extruder motor in the toolhead cable",
+  "opener": "The extruder skips and makes clicking noises, but only when the print head is in the front half of the bed. In the back half it extrudes fine, also when not printing. I already swapped the extruder gears and the motor, replaced the nozzle and the filament tube, tried other filaments and checked the crimps."},
+ {"id": "H27", "part": "host_computer", "ok": ["host_computer"], "evidence": "high (poster found and fixed the loose SD card holder)", "machine": "Voron 2.4",
+  "source": "https://forum.vorondesign.com/threads/printer-did-not-start-up-anymore-sd-card-slot-loose.1966/", "cause": "SD card holder of the Raspberry Pi loose, card lost contact",
+  "opener": "The printer did not start up anymore. The Raspberry Pi stopped booting, just like that, right after I fitted a fan to it. The SD card itself reads fine in my computer."},
+ {"id": "H28", "part": "nozzle", "ok": ["nozzle", "slicer_settings"], "evidence": "medium (a second owner with the same symptom: new nozzle fixed it)", "machine": "other printer / Voron parts",
+  "source": "https://forum.vorondesign.com/threads/top-layer-of-printed-voron-parts-are-a-little-rough.942/", "cause": "badly worn nozzle",
+  "opener": "The top layer of my ABS prints is a little rough, I need to sand the parts to get a good fit. Changing the top layer flow did not help."},
+ {"id": "H29", "part": "firmware_config_macros", "ok": ["firmware_config_macros", "hotend_thermistor"], "evidence": "high (thread marked Solved)", "machine": "Voron 0.2",
+  "source": "https://forum.vorondesign.com/threads/reported-temp-of-cold-hotend-is-15%C2%BA-above-ambient.2013/", "cause": "wrong pullup_resistor value for the thermistor in printer.cfg",
+  "opener": "The web interface reports a hotend temperature about 15 degrees above room temperature on a cold machine that was just powered up. The hotend reaches its target and is stable, but after heating is off it cools down to 15 degrees above ambient again."},
+ {"id": "H30", "part": "xy_pulleys_idlers", "ok": ["xy_pulleys_idlers", "xy_belts"], "evidence": "high (thread marked Solved: new idlers and belts)", "machine": "Voron 2.4",
+  "source": "https://forum.vorondesign.com/threads/voron-2-4-300mm-belt-moves-up-on-b-drive-corner.225/", "cause": "idlers let the belt climb; belt damaged",
+  "opener": "In certain moves I hear a really loud noise that sounds like step skipping. Watching the belts, the belt at the B drive moves up until it scratches the printed housing. It happens when the head is near the front right corner and on quick moves from there."},
+ {"id": "H31", "part": "extruder_motor", "ok": ["extruder_motor", "umbilical_wiring"], "evidence": "high (poster re-pinned the motor connector, works)", "machine": "Voron 2.4",
+  "source": "https://forum.vorondesign.com/threads/pancake-extruder-motor-klipper-reports-short-to-positive.1716/", "cause": "wrong wire order in the extruder motor connector",
+  "opener": "New build. When I try to extrude filament Klipper shuts down and reports that the extruder motor driver is shorted. Everything else works fine."},
+ {"id": "H32", "part": "firmware_config_macros", "ok": ["firmware_config_macros", "bed_heater"], "evidence": "high (thread marked Solved)", "machine": "Voron 2.4",
+  "source": "https://forum.vorondesign.com/threads/im-having-a-bed-heating-problem-in-that-it-is-stair-stepping-instead-of-heating-smoothly.940/", "cause": "bed heater power limited to 60 % in the config",
+  "opener": "My bed heats in stair steps instead of smoothly. It reaches 60 C but does not get to 105 C, and then Klipper stops with 'not heating at expected rate'. I double checked the bed thermistor connections. It worked before I took the printer apart to replace panels."}
+]

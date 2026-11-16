@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voron 0.2 Repair Assistant</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.34.4/cytoscape.min.js"></script>
+<style>
+:root{--ink:#1d2433;--mute:#6b7280;--line:#d9dee7;--bg:#f3f5f9;--card:#fff;--brand:#1f3a5f;--sym:#f59e0b;--cause:#dc2626;--cand:#fde68a;--ok:#16a34a}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--bg);height:100vh;display:flex;flex-direction:column}
+header{background:var(--brand);color:#fff;padding:10px 18px;display:flex;align-items:center;gap:14px}
+header h1{font-size:17px;margin:0;flex:1;font-weight:600}header .pill{font-size:12px;background:#ffffff22;padding:3px 9px;border-radius:12px}
+header select,header button{font:inherit;font-size:13px;border-radius:6px;border:0;padding:4px 8px}
+main{flex:1;display:grid;grid-template-columns:minmax(360px,38%) 1fr;gap:12px;padding:12px;min-height:0}
+.panel{background:var(--card);border-radius:10px;box-shadow:0 1px 3px #0001;display:flex;flex-direction:column;min-height:0}
+#log{flex:1;overflow:auto;padding:12px}
+.m{margin:8px 0;padding:9px 12px;border-radius:9px;line-height:1.4;font-size:14px}
+.u{background:#dbe8f7;margin-left:40px}.a{background:#f6f7fa;border:1px solid var(--line)}.sys{color:var(--mute);font-size:12px;text-align:center}
+.c{border-left:4px solid var(--cause);padding:4px 8px;margin:6px 0;background:#fff;cursor:pointer}.c.r2{border-color:#f59e0b}.c.r3{border-color:#9ca3af}
+.c b{font-size:14px}.c small{color:var(--mute)}
+.q{background:#fff7e0;border:1px solid #f5d27a}.q .opts button{margin:6px 6px 0 0}
+.btn{font:inherit;font-size:13px;border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 10px;cursor:pointer}
+.btn.pri{background:var(--brand);color:#fff;border-color:var(--brand)}.btn:hover{filter:brightness(.96)}
+#input{border-top:1px solid var(--line);padding:10px;display:flex;gap:8px;align-items:flex-end}
+#box{flex:1;font:inherit;font-size:14px;resize:none;height:52px;padding:7px;border:1px solid var(--line);border-radius:8px}
+#mic{width:48px;height:48px;border-radius:50%;border:0;background:var(--brand);color:#fff;font-size:20px;cursor:pointer}
+#mic.rec{background:var(--cause);animation:pulse 1s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 #dc262688}100%{box-shadow:0 0 0 14px #dc262600}}
+.tabs{display:flex;gap:4px;padding:8px 10px 0;border-bottom:1px solid var(--line)}
+.tab{padding:7px 14px;border:0;background:none;font:inherit;font-size:14px;cursor:pointer;border-bottom:3px solid transparent;color:var(--mute)}
+.tab.on{color:var(--brand);border-color:var(--brand);font-weight:600}
+.view{flex:1;display:none;min-height:0;overflow:auto;padding:12px}.view.on{display:flex;flex-direction:column}
+#printer svg{width:100%;height:100%;max-height:calc(100vh - 210px)}
+.part{fill:#e5e7eb;stroke:#6b7280;stroke-width:1.2;cursor:pointer;transition:fill .3s}
+.part:hover{fill:#cbd5e1}.line.part{fill:none;stroke:#9ca3af;stroke-width:3}
+.part.sym{fill:var(--sym)}.line.part.sym{stroke:var(--sym);fill:none}
+.part.cand{fill:var(--cand)}.line.part.cand{stroke:#eab308;fill:none}
+.part.cause{fill:var(--cause);animation:blink 1.2s infinite}.line.part.cause{stroke:var(--cause);fill:none}
+.part.flow{fill:#7c3aed !important;stroke:#7c3aed !important}.line.part.flow{fill:none !important;stroke-width:5}
+@keyframes blink{50%{opacity:.45}}
+.lbl{font-size:9.5px;fill:#374151;pointer-events:none}.frame{fill:none;stroke:#94a3b8;stroke-width:3}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mute);margin-bottom:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:4px;vertical-align:-2px}
+#info{font-size:13px;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:6px}
+#cy{flex:1;min-height:420px;border:1px solid var(--line);border-radius:8px}
+#fix{gap:10px}.step{display:flex;gap:10px;align-items:flex-start;padding:8px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.step input{margin-top:4px;transform:scale(1.3)}.step.done{opacity:.55;text-decoration:line-through}
+.step small{display:block;color:var(--mute);text-decoration:none}
+#pdf{width:100%;height:520px;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;font-size:13px}td{border-bottom:1px solid var(--line);padding:4px 8px}
+.hint{color:var(--mute);font-size:13px}
+@media(max-width:900px){main{grid-template-columns:1fr;overflow:auto}.panel{min-height:70vh}header h1{font-size:15px}}
+</style></head><body>
+<header><h1>Voron 0.2 Repair Assistant</h1>
+<span class="pill" id="modelpill">loading...</span>
+<label style="font-size:13px">Knowledge <select id="arm"><option value="G">G graph</option><option value="E">E cards+guide</option><option value="C">C cards</option><option value="B">B documents</option></select></label>
+<label style="font-size:13px"><input type="checkbox" id="speakOn" checked> Speak answers</label>
+<button class="btn" onclick="newCase()">New case</button></header>
+<main>
+<section class="panel">
+  <div id="log"><div class="m a">Hi! Tell me what is wrong with the printer. You can <b>type</b>, press the <b>microphone</b> and speak, or add a <b>photo</b>.
+  I will ask a few short questions until I am sure, then show you <b>where</b> the problem is and <b>how to fix it</b>.</div></div>
+  <div id="input">
+    <label class="btn" title="Add a photo" style="height:48px;display:flex;align-items:center">&#128247;<input type="file" id="photo" accept="image/*" capture="environment" hidden></label>
+    <textarea id="box" placeholder="e.g. the hotend fan stops and the temperature jumps when the head moves"></textarea>
+    <button id="mic" title="Click to speak, click again to stop">&#127908;</button>
+    <button class="btn pri" style="height:48px" onclick="sendText()">Send</button>
+  </div>
+</section>
+<section class="panel">
+  <div class="tabs"><button class="tab on" data-v="printer">Printer view</button><button class="tab" data-v="map">Cause map</button><button class="tab" data-v="fix">Fix it</button></div>
+  <div class="view on" id="printer">
+    <div class="legend"><span><i style="background:var(--sym)"></i>where the symptom shows</span><span><i style="background:var(--cause)"></i>most likely cause</span><span><i style="background:var(--cand)"></i>other candidates</span><span><i style="background:#7c3aed"></i>how the fault travels</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:4px"><button class="btn" onclick="playFlow()">&#9654; Show how the fault travels</button><span class="hint" id="pv-hint">Click any part to see what it does and how it fails.</span></div>
+    <svg id="svg" viewBox="0 0 540 560"></svg>
+    <div id="info" class="hint">No diagnosis yet.</div>
+  </div>
+  <div class="view" id="map"><div class="legend"><span><i style="background:var(--sym)"></i>symptom</span><span><i style="background:var(--cause)"></i>top cause</span><span><i style="background:var(--cand)"></i>upstream candidate</span><span>arrows = a fault here can show up there</span></div><div id="cy"></div><div id="cyfall" class="hint"></div></div>
+  <div class="view" id="fix"><div class="hint" id="fixhint">After the diagnosis, the repair steps appear here. You can also click a candidate in the chat.</div><div id="fixbody"></div></div>
+</section>
+</main>
+<script>
+// ---------- state ----------
+let META=null, hist=[], asked=[], last=null, plan=null, stepIdx=0;
+const $=s=>document.querySelector(s), esc=s=>(s??'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nm=id=>META&&META.components[id]?META.components[id].name:id;
+// ---------- printer schematic (an original simplified drawing, not to scale) ----------
+const P=[ // [id, svg element, label x, label y, label]
+ ['xy_motors_drivers','<rect x="66" y="44" width="30" height="24" rx="3"/><rect x="384" y="44" width="30" height="24" rx="3"/>',66,38,'XY motors A/B'],
+ ['xy_pulleys_idlers','<circle cx="112" cy="56" r="7"/><circle cx="368" cy="56" r="7"/><circle cx="112" cy="92" r="6"/><circle cx="368" cy="92" r="6"/>',100,112,''],
+ ['xy_belts','<path class="line" d="M96 56 H368 M112 63 V92 M368 63 V92 M112 92 H200 M280 92 H368"/>',200,50,'XY belts'],
+ ['y_linear_rails','<rect x="70" y="80" width="12" height="70"/><rect x="398" y="80" width="12" height="70"/>',40,165,'Y rails'],
+ ['x_linear_rail','<rect x="82" y="100" width="316" height="9"/>',300,124,'X rail'],
+ ['umbilical_wiring','<path class="line" d="M330 30 C 340 70, 300 80, 268 118" stroke-dasharray="6 3"/>',336,26,'umbilical cable'],
+ ['toolhead','<rect x="196" y="112" width="88" height="96" rx="6"/>',290,150,'toolhead'],
+ ['extruder_motor','<rect x="210" y="116" width="60" height="20" rx="3"/>',214,130,''],
+ ['extruder_gears_guidler','<circle cx="240" cy="146" r="7"/>',0,0,''],
+ ['heatbreak_ptfe','<rect x="236" y="154" width="8" height="26"/>',0,0,''],
+ ['hotend_fan','<circle cx="214" cy="170" r="11"/>',150,176,'hotend fan'],
+ ['part_cooling_fan','<circle cx="266" cy="170" r="11"/>',290,176,'part fan'],
+ ['hotend_heater','<rect x="226" y="182" width="28" height="12" rx="2"/>',150,200,'heater'],
+ ['hotend_thermistor','<circle cx="259" cy="188" r="5"/>',290,196,'thermistor'],
+ ['nozzle','<path d="M232 196 H248 L240 210 Z"/>',252,216,'nozzle'],
+ ['bed_plate_carrier','<rect x="120" y="270" width="240" height="16" rx="2"/>',122,264,'bed plate & carrier'],
+ ['bed_heater','<rect x="132" y="287" width="216" height="7"/>',176,306,'bed heater'],
+ ['bed_thermistor','<circle cx="342" cy="300" r="5"/>',350,304,'bed thermistor'],
+ ['z_rails','<rect x="150" y="215" width="8" height="160"/><rect x="322" y="215" width="8" height="160"/>',160,370,'Z rails'],
+ ['z_motor_leadscrew','<rect x="238" y="294" width="4" height="62"/><rect x="224" y="354" width="32" height="24" rx="3"/>',262,370,'Z motor & lead screw'],
+ ['z_endstop','<rect x="334" y="232" width="16" height="10"/>',354,240,'Z endstop'],
+ ['controller_board','<rect x="74" y="404" width="120" height="66" rx="4"/>',84,440,'controller (SKR Pico)'],
+ ['power_supply','<rect x="210" y="404" width="112" height="66" rx="4"/>',222,440,'power supply 24 V'],
+ ['host_computer','<rect x="338" y="410" width="74" height="54" rx="4"/>',344,440,'Raspberry Pi'],
+ ['filament_material','<circle cx="482" cy="190" r="36"/><circle cx="482" cy="190" r="10" fill="#fff"/>',452,244,'filament spool'],
+ ['filament_runout_sensor','<rect x="468" y="96" width="28" height="16" rx="3"/>',442,90,'runout sensor'],
+ ['firmware_config_macros','<rect x="74" y="496" width="190" height="34" rx="6"/>',90,517,'firmware config & macros'],
+ ['slicer_settings','<rect x="282" y="496" width="190" height="34" rx="6"/>',330,517,'slicer settings'],
+];
+function drawPrinter(){
+ let s='<rect class="frame" x="56" y="34" width="368" height="350" rx="6"/><rect class="frame" x="56" y="390" width="368" height="92" rx="6"/>'+
+  '<text class="lbl" x="62" y="400">electronics bay</text><text class="lbl" x="62" y="492">software</text>'+
+  '<path d="M482 154 V112 M468 104 C 420 104 300 60 268 118" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="3 3"/>';
+ for(const [id,el,lx,ly,l] of P){
+  const g=el.replace(/<(rect|circle|path)( class="line")?/g,(m,t,c)=>`<${t} class="part${c?' line':''}" data-id="${id}"`);
+  s+=`<g data-id="${id}"><title>${id}</title>${g}</g>`; if(l) s+=`<text class="lbl" x="${lx}" y="${ly}">${l}</text>`;
+ }
+ $('#svg').innerHTML=s;
+ $('#svg').querySelectorAll('.part').forEach(e=>e.addEventListener('click',()=>showPart(e.dataset.id)));
+}
+function mark(ids,cls){$('#svg').querySelectorAll('.part').forEach(e=>{if(ids.includes(e.dataset.id))e.classList.add(cls)})}
+function clearMarks(){$('#svg').querySelectorAll('.part').forEach(e=>e.classList.remove('sym','cause','cand','flow'))}
+function showPart(id){if(!META)return;const c=META.cards[id];if(!c)return;
+ $('#info').innerHTML=`<b>${esc(nm(id))}</b> <small>(${id})</small><br>${esc(c.function)}<br>`+
+  c.failure_modes.map(f=>`<span style="color:#b45309">Fails as:</span> ${esc(f.mode)} &rarr; <i>${esc(f.symptom)}</i><br><span style="color:#166534">Check:</span> ${esc(f.check)}`).join('<br>')+
+  (c.values.length?`<br><span class="hint">Correct values: ${esc(c.values.join('; '))}</span>`:'')+
+  `<br><button class="btn" style="margin-top:6px" onclick="getFix('${id}')">How to check / fix this part</button>`}
+function paintResult(r){clearMarks();if(!r||!r.candidates.length)return;
+ const seeds=(r.graph?r.graph.seeds:[]).slice(0,3), top=r.candidates[0].component_id;
+ mark(seeds.filter(s=>s!==top),'sym'); mark(r.candidates.slice(1).map(c=>c.component_id),'cand'); mark([top],'cause'); showPart(top)}
+async function playFlow(){if(!last||!last.candidates.length)return;const paths=last.candidates[0].paths||[];
+ if(!paths.length){$('#pv-hint').textContent='The top cause is itself where the symptom shows; there is no path to animate.';return}
+ for(const p of paths){const ids=p.split(/ --[a-z_]+--> /);
+  for(const id of ids){$('#svg').querySelectorAll(`.part[data-id="${id}"]`).forEach(e=>e.classList.add('flow'));await new Promise(r=>setTimeout(r,650))}
+  await new Promise(r=>setTimeout(r,500));$('#svg').querySelectorAll('.flow').forEach(e=>e.classList.remove('flow'))}
+ $('#pv-hint').textContent=paths.map(p=>p.replace(/ --([a-z_]+)--> /g,' → ')).join('   |   ')}
+// ---------- cause map (Cytoscape.js) ----------
+let cy=null; const SUBCOL={'Hotend':'#fecaca','Extruder':'#fed7aa','Cooling':'#bae6fd','Motion XY':'#c7d2fe','Toolhead':'#ddd6fe','Bed/Z':'#bbf7d0','Bed':'#d9f99d','Electronics':'#e5e7eb','Firmware/sensors':'#fbcfe8','Firmware':'#f5d0fe','Slicer':'#fde68a','Material':'#e7e5e4'};
+function drawMap(){if(typeof cytoscape==='undefined'){$('#cyfall').textContent='The graph library could not load (no internet?). The paths are still shown in the chat and printer view.';$('#cy').style.display='none';return}
+ const els=[];for(const [id,c] of Object.entries(META.components))els.push({data:{id,label:c.name.split(' (')[0],col:SUBCOL[c.subsystem]||'#eee'}});
+ META.edges.forEach((e,i)=>els.push({data:{id:'e'+i,source:e.src,target:e.dst,rel:e.rel}}));
+ cy=cytoscape({container:$('#cy'),elements:els,layout:{name:'cose',animate:false,nodeRepulsion:9000,idealEdgeLength:90,randomize:false},
+  style:[{selector:'node',style:{'background-color':'data(col)','label':'data(label)','font-size':9,'text-wrap':'wrap','text-max-width':80,'width':22,'height':22,'border-width':1,'border-color':'#64748b'}},
+   {selector:'edge',style:{'width':1,'line-color':'#cbd5e1','target-arrow-color':'#cbd5e1','target-arrow-shape':'triangle','curve-style':'bezier','arrow-scale':.7}},
+   {selector:'.sym',style:{'background-color':'#f59e0b','width':30,'height':30}},{selector:'.cand',style:{'background-color':'#fde68a','width':28,'height':28}},
+   {selector:'.cause',style:{'background-color':'#dc2626','width':36,'height':36,'color':'#991b1b','font-weight':'bold'}},
+   {selector:'edge.hot',style:{'width':4,'line-color':'#7c3aed','target-arrow-color':'#7c3aed','label':'data(rel)','font-size':8,'color':'#5b21b6'}},
+   {selector:'.dim',style:{'opacity':.25}}]});
+ cy.on('tap','node',e=>{showPart(e.target.id());switchTab('printer')})}
+function paintMap(r){if(!cy||!r)return;cy.elements().removeClass('sym cand cause hot dim');if(!r.candidates.length)return;
+ const top=r.candidates[0].component_id, seeds=r.graph?r.graph.seeds.slice(0,3):[], ups=r.graph?r.graph.upstream.map(u=>u.id):[];
+ const keep=new Set([top,...seeds,...ups,...r.candidates.map(c=>c.component_id)]);
+ seeds.forEach(s=>cy.$id(s).addClass('sym'));ups.concat(r.candidates.slice(1).map(c=>c.component_id)).forEach(s=>cy.$id(s).addClass('cand'));cy.$id(top).addClass('cause');
+ for(const c of r.candidates)for(const p of (c.paths||[])){const ids=p.split(/ --[a-z_]+--> /);ids.forEach(i=>keep.add(i));
+  for(let i=0;i<ids.length-1;i++)cy.edges(`[source="${ids[i]}"][target="${ids[i+1]}"]`).addClass('hot')}
+ cy.nodes().forEach(n=>{if(!keep.has(n.id()))n.addClass('dim')});cy.edges().not('.hot').addClass('dim')}
+// ---------- fix plan ----------
+async function getFix(id){switchTab('fix');$('#fixhint').textContent='Writing the repair steps for '+nm(id)+'...';$('#fixbody').innerHTML='';
+ const r=await post('/api/fix',{component_id:id,symptom:last?last.symptom:''});if(r.error){$('#fixhint').textContent='Error: '+r.error;return}
+ plan=r;stepIdx=0;$('#fixhint').innerHTML='';const pg=r.pages||[];
+ let h=`<h3 style="margin:0">Fix: ${esc(r.name)}</h3><div class="hint">Tick each step when done. Press <b>Read next step</b> to hear the steps one by one, or say "next".</div>`+
+  `<div><button class="btn pri" onclick="readNext()">&#128266; Read next step</button> <button class="btn" onclick="stepIdx=0;readNext()">Start again</button></div>`;
+ r.steps.forEach((s,i)=>h+=`<label class="step" id="st${i}"><input type="checkbox" onchange="this.parentNode.classList.toggle('done',this.checked)"><div><b>${i+1}.</b> ${esc(s.step)}<small>Source: ${esc(s.source)}</small></div></label>`);
+ if(r.values.length)h+=`<h4 style="margin:6px 0 0">Correct values (from the printer configuration)</h4><table>${r.values.map(v=>`<tr><td>${esc(v)}</td></tr>`).join('')}</table>`;
+ if(META.manual&&pg.length)h+=`<h4 style="margin:6px 0 0">Assembly manual</h4><div>${pg.map(p=>`<button class="btn" onclick="openPage(${p})">page ${p}</button>`).join(' ')}</div><iframe id="pdf"></iframe>`;
+ h+=`<div style="margin-top:6px">Did this fix it? <button class="btn" onclick="fb('fixed')">Yes, fixed</button> <button class="btn" onclick="fb('not fixed')">No</button></div>`;
+ $('#fixbody').innerHTML=h;if(META.manual&&pg.length)openPage(pg[0]);
+ say(`To check the ${r.name}: ${r.steps.length} steps. Press read next step, or say next.`)}
+function openPage(p){const f=$('#pdf');if(f)f.src='/manual.pdf?p='+p+'#page='+p}
+function readNext(){if(!plan)return;if(stepIdx>=plan.steps.length){say('That was the last step.');return}
+ const s=plan.steps[stepIdx];document.querySelectorAll('.step').forEach(e=>e.style.outline='');const el=$('#st'+stepIdx);if(el){el.style.outline='2px solid var(--brand)';el.scrollIntoView({block:'nearest'})}
+ say(`Step ${stepIdx+1}. ${s.step}`);stepIdx++}
+// ---------- conversation ----------
+function add(cls,h){const d=document.createElement('div');d.className='m '+cls;d.innerHTML=h;$('#log').appendChild(d);$('#log').scrollTop=1e9;return d}
+async function post(u,b){try{return await (await fetch(u,{method:'POST',body:JSON.stringify(b)})).json()}catch(e){return{error:String(e)}}}
+function newCase(){hist=[];asked=[];last=null;plan=null;clearMarks();if(cy)cy.elements().removeClass('sym cand cause hot dim');$('#info').textContent='No diagnosis yet.';$('#fixbody').innerHTML='';add('sys','--- new case ---')}
+function sendText(){const t=$('#box').value.trim();if(!t)return;$('#box').value='';userSays(t)}
+async function userSays(t){
+ if(plan&&/^(next|next step|continue)\.?$/i.test(t)){readNext();return}
+ hist.push({role:'user',text:t});add('u',esc(t));const w=add('sys','Thinking... (the local model can take up to a minute)');
+ const r=await post('/api/diagnose',{arm:$('#arm').value,history:hist,asked});w.remove();
+ if(r.error){add('a','Sorry, something went wrong: '+esc(r.error));return}
+ last=r;paintResult(r);paintMap(r);
+ let h=`<div class="hint">${esc(r.model)} &middot; knowledge ${r.arm} &middot; ${r.secs} s</div>`;
+ if(!r.candidates.length)h+='I could not name a part yet. Can you describe it differently?';
+ r.candidates.forEach((c,i)=>h+=`<div class="c r${i+1}" onclick="getFix('${c.component_id}')"><b>${i+1}. ${esc(c.name)}</b><br>${esc(c.reason)}<br><small>Check: ${esc(c.check)}${c.correct_value?' &middot; correct value: '+esc(c.correct_value):''} &middot; source: ${esc(c.source)}</small></div>`);
+ add('a',h);
+ let speech=r.candidates.length?`Most likely: ${r.candidates[0].name}. ${r.candidates[0].reason||''}`:'';
+ if(r.question){asked.push(r.question.question);hist.push({role:'agent',question:r.question.question});
+  const q=add('q',`<b>To be sure, one question:</b> ${esc(r.question.question)}<div class="opts">${(r.question.options||['Yes','No','Not sure']).map(o=>`<button class="btn">${esc(o)}</button>`).join('')}<button class="btn" data-skip="1">Skip, show the fix</button></div>`);
+  q.querySelectorAll('button').forEach(b=>b.onclick=()=>{q.querySelectorAll('button').forEach(x=>x.disabled=true);if(b.dataset.skip){finish();return}userSays(b.textContent)});
+  say(speech+' To be sure: '+r.question.question)}
+ else{say(speech+' I have a clear picture. Here is how to check and fix it.');finish()}
+ switchTab('printer');setTimeout(playFlow,800)}
+function finish(){if(last&&last.candidates.length)setTimeout(()=>getFix(last.candidates[0].component_id),1500)}
+async function fb(v){await post('/api/feedback',{verdict:v,result:last,plan});add('sys','Saved: '+v+'. Thank you!')}
+// ---------- photo ----------
+$('#photo').onchange=async e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=async()=>{
+ add('u',`<img src="${rd.result}" style="max-width:180px;border-radius:6px">`);const w=add('sys','Looking at the photo...');
+ const r=await post('/api/photo',{image:rd.result});w.remove();if(r.error){add('a','I could not read the photo: '+esc(r.error)+'<br><span class="hint">Install a vision model: ollama pull qwen2.5vl:3b</span>');return}
+ add('a','In the photo I see: '+esc(r.text));userSays('Photo shows: '+r.text)};rd.readAsDataURL(f);e.target.value=''};
+// ---------- voice ----------
+let audioEl=new Audio();
+async function say(t){if(!$('#speakOn').checked||!t)return;t=t.replace(/[_]/g,' ');
+ if(META&&META.voice.tts){const r=await fetch('/api/tts',{method:'POST',body:JSON.stringify({text:t})});if(r.ok){audioEl.pause();audioEl.src=URL.createObjectURL(await r.blob());audioEl.play();return}}
+ if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=1.02;speechSynthesis.speak(u)}}
+let rec=null,chunks=[],sr=null;
+$('#mic').onclick=async()=>{audioEl.pause();if('speechSynthesis' in window)speechSynthesis.cancel();
+ if(META&&META.voice.stt){ // offline: record and send to faster-whisper
+  if(rec&&rec.state==='recording'){rec.stop();return}
+  try{const st=await navigator.mediaDevices.getUserMedia({audio:true});rec=new MediaRecorder(st);chunks=[];
+   rec.ondataavailable=e=>chunks.push(e.data);rec.onstop=async()=>{$('#mic').classList.remove('rec');st.getTracks().forEach(t=>t.stop());
+    const w=add('sys','Listening back...');const b=new Blob(chunks,{type:rec.mimeType});
+    const r=await (await fetch('/api/stt',{method:'POST',headers:{'Content-Type':rec.mimeType},body:b})).json();w.remove();
+    if(r.text)userSays(r.text);else add('sys','I did not catch that. '+(r.error||''))};
+   rec.start();$('#mic').classList.add('rec')}catch(e){add('sys','Microphone not available: '+e)}
+ }else{ // fallback: the browser's speech recognition (Chrome/Edge)
+  const S=window.SpeechRecognition||window.webkitSpeechRecognition;if(!S){add('sys','Voice input needs Chrome or Edge, or install faster-whisper.');return}
+  if(sr){sr.stop();return}sr=new S();sr.lang='en-US';sr.interimResults=false;$('#mic').classList.add('rec');
+  sr.onresult=e=>userSays(e.results[0][0].transcript);sr.onend=()=>{$('#mic').classList.remove('rec');sr=null};sr.onerror=e=>add('sys','Voice error: '+e.error);sr.start()}};
+// ---------- tabs & start ----------
+function switchTab(v){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id===v));if(v==='map'&&cy){cy.resize();cy.fit(undefined,20)}}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>switchTab(t.dataset.v));
+$('#box').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendText()}});
+(async()=>{META=await (await fetch('/api/meta')).json();$('#arm').value=META.arm;
+ $('#modelpill').textContent=META.model+' · voice in: '+(META.voice.stt?'Whisper':'browser')+' · voice out: '+(META.voice.tts?'Piper':'browser');
+ drawPrinter();drawMap()})();
+</script></body></html>

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Assembly · Voron 0.2 Assistant</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/app/ui.css">
+<style>
+body{overflow:hidden}
+#app{display:grid;grid-template-columns:270px minmax(0,1fr) 370px;height:calc(100vh - 54px)}
+@media (max-width:1150px){#app{grid-template-columns:210px minmax(0,1fr) 300px}}
+#steps{background:var(--surface);border-right:1px solid var(--line);overflow:auto;padding:14px 10px}
+#steps h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);padding:0 8px 8px}
+.step{display:flex;gap:10px;align-items:center;padding:8px;border-radius:9px;cursor:pointer;font-size:14px}
+.step:hover{background:var(--bg)}.step .n{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:12px;color:var(--mut);flex:none}
+.step.done .n{background:var(--ok);border-color:var(--ok);color:#fff}.step.now{background:var(--acc-soft)}.step.now .n{background:var(--acc);border-color:var(--acc);color:#fff}
+.step.now .t{font-weight:600;color:var(--acc)}
+#mid{display:flex;flex-direction:column;min-width:0;min-height:0}#view{flex:1}
+#toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--line)}
+#toolbar .grow{flex:1}#toolbar select{width:auto;padding:7px 8px}
+#progress{height:4px;background:#e2e4e8;overflow:hidden;flex:none}#bar{height:100%;width:0;background:var(--acc);transition:width .3s}
+#caption{flex:none;background:var(--surface);border-top:1px solid var(--line);padding:12px 18px 14px;height:178px;overflow:auto}
+#hint{position:absolute;left:14px;bottom:10px;font-size:12px;color:var(--mut);z-index:2}
+#caption h2{font-size:17px}#caption .pg{font-size:12px;color:var(--mut);margin-left:8px;font-weight:400}
+#caption p{margin:6px 0 0;font-size:14px}#caption .lab{font-weight:600}
+#side{border-left:1px solid var(--line);background:var(--bg);min-height:0}
+#side .head{padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface)}#side .head h3{font-size:15px}
+</style>
+<script type="importmap">{"imports":{"three":"/vendor/three.module.min.js","three/addons/":"/vendor/addons/"}}</script>
+</head><body>
+<header id="top"></header>
+<div id="app">
+  <aside id="steps"><h3>Assembly steps</h3><div id="steplist"></div></aside>
+  <div id="mid">
+    <div id="toolbar">
+      <button class="primary" id="play">▶ Assemble</button>
+      <button id="prev" title="One step back">◀ Step back</button><button id="next" title="Assemble the next step">Next step ▶</button>
+      <button id="explode" title="Lay all parts out again">Show all parts</button>
+      <span class="grow"></span>
+      <label class="small mut">Speed</label><select id="speed"><option value="0.6">Slow</option><option value="1" selected>Normal</option><option value="2">Fast</option></select>
+      <button id="resetview" title="Reset the camera">Reset view</button>
+    </div>
+    <div id="progress"><div id="bar"></div></div>
+    <div class="view" id="view"><div class="tip" id="tip"></div><div id="hint">Drag to rotate · scroll to zoom · click a part to ask about it</div></div>
+    <div id="caption"><h2 id="c-title">All parts of the Voron 0.2</h2><p id="c-what">These are the main assemblies of the printer, laid out around the place where it will stand. Press <b>Assemble</b> to watch them come together one by one, or use <b>Next step</b> to go at your own pace. Drag to rotate, scroll to zoom.</p><p id="c-connect"></p><p id="c-tip" class="mut"></p></div>
+  </div>
+  <aside id="side"><div class="chat">
+    <div class="head"><h3>Assembly guide</h3><div class="tiny mut">Ask how a part works or how two parts connect. Click a part in the 3D view to ask about it.</div></div>
+    <div class="chatlog" id="log"></div>
+    <div class="chips" id="chips"></div>
+    <div class="composer"><textarea id="msg" rows="1" placeholder="Ask about a part or a step…"></textarea><button class="primary" id="send">Send</button></div>
+  </div></aside>
+</div>
+<script type="module">
+import { $, esc, fmt, post, get, topbar, Chat, composer } from '/app/common.js';
+import { createPrinter } from '/app/printer3d.js';
+topbar('assembly');
+const chat = Chat($('#log'));
+let STEPS = [], NAMES = {}, cur = 0, anim = null, hold = 0, playing = false, speed = 1, autoCam = true, fade = null, lastCamF = -1, camN = 0;
+const DUR = 2.6;            // seconds per step at normal speed
+
+const P = createPrinter($('#view'), {
+  onTick, onPick: pid => ask(`What is the ${NAMES[pid] || pid} and how is it connected?`),
+  onHover: (pid, x, y) => { const t = $('#tip'); if (pid) { t.textContent = NAMES[pid] || pid; t.style.display = 'block'; t.style.left = (x + 14) + 'px'; t.style.top = (y + 12) + 'px'; } else t.style.display = 'none'; },
+});
+P.opt.static = true;
+P.controls.addEventListener('start', () => autoCam = false);
+
+async function init() {
+  const wait = chat.typing('Loading the printer model…');
+  const cad = await P.setCad(true);
+  STEPS = await get('/api/assembly/steps') || []; (await get('/api/parts') || []).forEach(p => NAMES[p.id] = p.name);
+  P.buildUnits(STEPS); explodeAll(); P.snapView(); wait();
+  $('#steplist').innerHTML = STEPS.map((s, i) => `<div class="step" data-i="${i}"><span class="n">${i + 1}</span><span class="t">${esc(s.title)}</span></div>`).join('');
+  $('#steplist').querySelectorAll('.step').forEach(el => el.onclick = () => jumpTo(+el.dataset.i, true));
+  chat.say(fmt(`Hello. This page shows how the Voron 0.2 is built, in the order of the assembly manual (${STEPS.length} steps).\nPress **Assemble** to watch, or ask me anything about a part or a step.`) +
+    (cad.ok ? '' : '<div class="src">The official CAD model is not converted yet, so a simplified model is shown (see SETUP step 19).</div>'));
+  for (const q of ['What is the order of the steps?', 'How are the belts connected to the motors?', 'How does the extruder work?', 'Show me how the bed is mounted']) {
+    const b = document.createElement('button'); b.textContent = q; b.onclick = () => ask(q); $('#chips').appendChild(b); }
+  paint();
+}
+// ---------- assembly animation ----------
+function explodeAll() { anim = null; fade = null; playing = false; cur = 0; hold = 0; lastCamF = -1; P.units.forEach((u, i) => { P.setUnit(i, 0); P.glowUnit(i, 0); }); autoCam = true; P.fitAll(); caption(-1); paint(); }
+const cam = i => { if (autoCam) P.fitBuild(i); };   // camera on the build place (and on unit i while it flies in)
+function startStep(i) { if (i >= STEPS.length) { playing = false; finish(); return; } anim = { i, t: 0 }; caption(i); paint(); cam(i); }
+function onTick(dt) {
+  if (anim) {
+    anim.t += dt * speed / DUR; P.setUnit(anim.i, Math.min(1, anim.t)); if (++camN % 5 === 0) cam(anim.i); P.glowUnit(anim.i, .55 + .25 * Math.sin(performance.now() / 130));
+    if (anim.t >= 1) { cur = anim.i + 1; hold = .9; const i = anim.i; anim = null; fade = { i, k: .8 }; paint(); }
+  } else if (hold > 0) { hold -= dt * speed; if (hold <= 0 && playing) startStep(cur); }
+  if (fade) { fade.k -= dt * 1.1; P.glowUnit(fade.i, Math.max(0, fade.k)); if (fade.k <= 0) fade = null; }
+}
+function finish() { caption(STEPS.length); paint(); cam(-1); }
+function jumpTo(i, animate) {            // units before i are assembled, i and later are laid out; then step i is played
+  anim = null; fade = null; hold = 0; playing = false; P.units.forEach((u, k) => { P.setUnit(k, k < i ? 1 : 0); P.glowUnit(k, 0); }); cur = i; lastCamF = -1;
+  if (animate) startStep(i); else { caption(i - 1); paint(); cam(-1); }
+}
+function caption(i) {
+  if (i < 0) { $('#c-title').textContent = 'All parts of the Voron 0.2'; $('#c-what').innerHTML = 'These are the main assemblies of the printer, laid out around the place where it will stand. Press <b>Assemble</b> to watch them come together one by one, or use <b>Next step</b> to go at your own pace. Drag to rotate, scroll to zoom.'; $('#c-connect').textContent = ''; $('#c-tip').textContent = ''; return; }
+  if (i >= STEPS.length) { $('#c-title').textContent = 'The printer is complete'; $('#c-what').textContent = 'All assemblies are in place. Click any part to ask the guide about it, or press "Show all parts" to start again.'; $('#c-connect').textContent = ''; $('#c-tip').textContent = ''; return; }
+  const s = STEPS[i];
+  $('#c-title').innerHTML = `Step ${s.n} of ${STEPS.length}: ${esc(s.title)}<span class="pg">Assembly manual p. ${esc(s.pages)}</span>`;
+  $('#c-what').textContent = s.what; $('#c-connect').innerHTML = `<span class="lab">How it connects: </span>${esc(s.connect)}`; $('#c-tip').innerHTML = `<span class="lab">Tip: </span>${esc(s.tip)}`;
+}
+function paint() {
+  const now = anim ? anim.i : -1, building = !!anim || (cur > 0 && cur < STEPS.length);
+  (P.units || []).forEach((u, k) => P.dimUnit(k, building && k >= cur && k !== now));
+  $('#steplist').querySelectorAll('.step').forEach((el, i) => { el.classList.toggle('done', i < cur && i !== now); el.classList.toggle('now', i === now); });
+  $('#bar').style.width = (100 * cur / Math.max(1, STEPS.length)) + '%';
+  $('#play').textContent = playing ? '❚❚ Pause' : (cur >= STEPS.length ? '↻ Assemble again' : (cur > 0 ? '▶ Continue' : '▶ Assemble'));
+}
+$('#play').onclick = () => { if (playing) { playing = false; paint(); return; } if (cur >= STEPS.length) explodeAll(); playing = true; if (!anim) startStep(cur); paint(); };
+$('#next').onclick = () => { playing = false; if (anim) { P.setUnit(anim.i, 1); P.glowUnit(anim.i, 0); cur = anim.i + 1; anim = null; } if (cur < STEPS.length) startStep(cur); else finish(); paint(); };
+$('#prev').onclick = () => { playing = false; if (anim) { P.setUnit(anim.i, 0); P.glowUnit(anim.i, 0); anim = null; } else if (cur > 0) { cur--; P.setUnit(cur, 0); } if (fade) { P.glowUnit(fade.i, 0); fade = null; } caption(cur - 1); paint(); if (cur === 0) { autoCam = true; P.fitAll(); } else cam(-1); };
+$('#explode').onclick = () => explodeAll();
+$('#speed').onchange = e => speed = +e.target.value;
+$('#resetview').onclick = () => { autoCam = true; if (cur === 0 && !anim) P.fitAll(); else P.fitBuild(anim ? anim.i : -1); };
+
+// ---------- chat ----------
+async function ask(q) {
+  chat.me(q); const done = chat.typing();
+  const r = await post('/api/assembly/ask', { message: q, step: cur }); done();
+  if (r.error) { chat.say(esc(r.error)); return; }
+  const m = chat.say(fmt(r.answer) + (r.sources?.length ? `<div class="src">Source: ${r.sources.map(esc).join(' · ')}</div>` : ''));
+  const a = r.actions || {};
+  if (a.highlight?.length) { P.glow = new Set(a.highlight); clearTimeout(ask.t); ask.t = setTimeout(() => P.glow = new Set(), 9000); }
+  if (a.step) { const i = a.step - 1;
+    if (a.replay) chat.buttons(m, [{ label: `▶ Show step ${a.step} in 3D`, cls: 'primary', keep: true, on: () => jumpTo(i, true) }]);
+    if (a.replay && cur <= i) jumpTo(i, true); else if (a.highlight?.length && cur > i) P.focusPart(a.highlight[0]); }
+  else if (a.highlight?.length && cur >= STEPS.length) P.focusPart(a.highlight[0]);
+}
+composer($('#msg'), $('#send'), ask);
+init();
+</script>
+</body></html>

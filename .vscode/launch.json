@@ -1,0 +1,97 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "A. Diagnostic chat v2",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/assistant_v2/server.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "B. Diagnostic chat v2 - demo without Ollama",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/assistant_v2/server.py",
+      "args": [
+        "--port",
+        "8901"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "STUB": "1"
+      },
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "C. Diagnostic chat v2 - test conversations",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/assistant_v2/test_scenarios.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "1. Chat window (arm G)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/chat_ui.py",
+      "args": [
+        "--arm",
+        "G"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "2. Chat in the terminal (arm G)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/agent.py",
+      "args": [
+        "--arm",
+        "G"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "3. Build the graph",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/build_graph.py",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "4. Overnight test (arm G, 58 cases)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/run_eval.py",
+      "args": [
+        "--arms",
+        "G"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "5. Quick offline test (no Ollama, fake model)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/chat_ui.py",
+      "args": [
+        "--arm",
+        "G",
+        "--port",
+        "8766"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "STUB": "1"
+      },
+      "console": "integratedTerminal"
+    }
+  ]
+}

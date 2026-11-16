@@ -1,0 +1,11 @@
+# Ollama recipe for the fine-tuned model. Put the downloaded .gguf in this folder and change the file name below if needed.
+FROM ./voron-qwen.Q4_K_M.gguf
+TEMPLATE """{{- if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{- range .Messages }}<|im_start|>{{ .Role }}
+{{ .Content }}<|im_end|>
+{{ end }}<|im_start|>assistant
+"""
+PARAMETER stop "<|im_end|>"
+PARAMETER temperature 0
+PARAMETER num_ctx 4096

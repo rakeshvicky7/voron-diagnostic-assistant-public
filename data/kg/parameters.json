@@ -1,0 +1,961 @@
+[
+  {
+    "section": "mcu",
+    "key": "serial",
+    "value": "/dev/serial/by-id/usb-Klipper_rp2040_REPLACE_WITH_YOUR_VALUE",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:26"
+  },
+  {
+    "section": "mcu",
+    "key": "restart_method",
+    "value": "command",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:28"
+  },
+  {
+    "section": "temperature_sensor mcu_temp",
+    "key": "sensor_type",
+    "value": "temperature_mcu",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:32"
+  },
+  {
+    "section": "temperature_sensor mcu_temp",
+    "key": "min_temp",
+    "value": "0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:33"
+  },
+  {
+    "section": "temperature_sensor mcu_temp",
+    "key": "max_temp",
+    "value": "100",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:34"
+  },
+  {
+    "section": "temperature_sensor raspberry_pi",
+    "key": "sensor_type",
+    "value": "temperature_host",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:37"
+  },
+  {
+    "section": "temperature_sensor raspberry_pi",
+    "key": "min_temp",
+    "value": "10",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:38"
+  },
+  {
+    "section": "temperature_sensor raspberry_pi",
+    "key": "max_temp",
+    "value": "100",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:39"
+  },
+  {
+    "section": "printer",
+    "key": "kinematics",
+    "value": "corexy",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:42"
+  },
+  {
+    "section": "printer",
+    "key": "max_velocity",
+    "value": "200",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:43"
+  },
+  {
+    "section": "printer",
+    "key": "max_accel",
+    "value": "2000",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:44"
+  },
+  {
+    "section": "printer",
+    "key": "max_z_velocity",
+    "value": "15",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:45"
+  },
+  {
+    "section": "printer",
+    "key": "max_z_accel",
+    "value": "300",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:46"
+  },
+  {
+    "section": "printer",
+    "key": "square_corner_velocity",
+    "value": "6.0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:47"
+  },
+  {
+    "section": "stepper_x",
+    "key": "step_pin",
+    "value": "gpio11",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:54"
+  },
+  {
+    "section": "stepper_x",
+    "key": "dir_pin",
+    "value": "gpio10",
+    "comment": "Check motor direction in link above. If inverted, add a ! before gpio10",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:56"
+  },
+  {
+    "section": "stepper_x",
+    "key": "enable_pin",
+    "value": "!gpio12",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:57"
+  },
+  {
+    "section": "stepper_x",
+    "key": "rotation_distance",
+    "value": "40",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:58"
+  },
+  {
+    "section": "stepper_x",
+    "key": "microsteps",
+    "value": "32",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:59"
+  },
+  {
+    "section": "stepper_x",
+    "key": "full_steps_per_rotation",
+    "value": "200",
+    "comment": "Set to 400 for 0.9\u00b0 degree stepper motor, 200 is for 1.8\u00b0 stepper motors",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:60"
+  },
+  {
+    "section": "stepper_x",
+    "key": "endstop_pin",
+    "value": "tmc2209_stepper_x:virtual_endstop",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:61"
+  },
+  {
+    "section": "stepper_x",
+    "key": "position_endstop",
+    "value": "120",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:62"
+  },
+  {
+    "section": "stepper_x",
+    "key": "position_max",
+    "value": "120",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:63"
+  },
+  {
+    "section": "stepper_x",
+    "key": "homing_speed",
+    "value": "40",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:64"
+  },
+  {
+    "section": "stepper_x",
+    "key": "homing_retract_dist",
+    "value": "0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:65"
+  },
+  {
+    "section": "stepper_x",
+    "key": "homing_positive_dir",
+    "value": "true",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:66"
+  },
+  {
+    "section": "tmc2209 stepper_x",
+    "key": "uart_pin",
+    "value": "gpio9",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:69"
+  },
+  {
+    "section": "tmc2209 stepper_x",
+    "key": "tx_pin",
+    "value": "gpio8",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:70"
+  },
+  {
+    "section": "tmc2209 stepper_x",
+    "key": "uart_address",
+    "value": "0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:71"
+  },
+  {
+    "section": "tmc2209 stepper_x",
+    "key": "interpolate",
+    "value": "False",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:72"
+  },
+  {
+    "section": "tmc2209 stepper_x",
+    "key": "sense_resistor",
+    "value": "0.110",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:75"
+  },
+  {
+    "section": "tmc2209 stepper_x",
+    "key": "stealthchop_threshold",
+    "value": "0",
+    "comment": "Set to 999999 to turn stealthchop on, and 0 to use spreadcycle",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:76"
+  },
+  {
+    "section": "tmc2209 stepper_x",
+    "key": "diag_pin",
+    "value": "^gpio4",
+    "comment": "YOU NEED TO JUMP THIS DIAG PIN ON YOUR BOARD FOR SENSORLESS HOMING TO WORK",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:77"
+  },
+  {
+    "section": "tmc2209 stepper_x",
+    "key": "driver_SGTHRS",
+    "value": "255",
+    "comment": "this is set to 255 which is the MAX sensitivity for sensorless homing, you will need to tune this later",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:78"
+  },
+  {
+    "section": "stepper_y",
+    "key": "step_pin",
+    "value": "gpio6",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:81"
+  },
+  {
+    "section": "stepper_y",
+    "key": "dir_pin",
+    "value": "gpio5",
+    "comment": "Check motor direction in link above. If inverted, add a ! before gpio5",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:83"
+  },
+  {
+    "section": "stepper_y",
+    "key": "enable_pin",
+    "value": "!gpio7",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:84"
+  },
+  {
+    "section": "stepper_y",
+    "key": "rotation_distance",
+    "value": "40",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:85"
+  },
+  {
+    "section": "stepper_y",
+    "key": "microsteps",
+    "value": "32",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:86"
+  },
+  {
+    "section": "stepper_y",
+    "key": "full_steps_per_rotation",
+    "value": "200",
+    "comment": "Set to 400 for 0.9\u00b0 degree stepper motor, 200 is for 1.8\u00b0 stepper motors",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:87"
+  },
+  {
+    "section": "stepper_y",
+    "key": "endstop_pin",
+    "value": "tmc2209_stepper_y:virtual_endstop",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:88"
+  },
+  {
+    "section": "stepper_y",
+    "key": "position_endstop",
+    "value": "120",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:89"
+  },
+  {
+    "section": "stepper_y",
+    "key": "position_max",
+    "value": "120",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:90"
+  },
+  {
+    "section": "stepper_y",
+    "key": "homing_speed",
+    "value": "40",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:91"
+  },
+  {
+    "section": "stepper_y",
+    "key": "homing_retract_dist",
+    "value": "0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:92"
+  },
+  {
+    "section": "stepper_y",
+    "key": "homing_positive_dir",
+    "value": "true",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:93"
+  },
+  {
+    "section": "tmc2209 stepper_y",
+    "key": "uart_pin",
+    "value": "gpio9",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:96"
+  },
+  {
+    "section": "tmc2209 stepper_y",
+    "key": "tx_pin",
+    "value": "gpio8",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:97"
+  },
+  {
+    "section": "tmc2209 stepper_y",
+    "key": "uart_address",
+    "value": "2",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:98"
+  },
+  {
+    "section": "tmc2209 stepper_y",
+    "key": "interpolate",
+    "value": "False",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:99"
+  },
+  {
+    "section": "tmc2209 stepper_y",
+    "key": "sense_resistor",
+    "value": "0.110",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:102"
+  },
+  {
+    "section": "tmc2209 stepper_y",
+    "key": "stealthchop_threshold",
+    "value": "0",
+    "comment": "Set to 999999 to turn stealthchop on, and 0 to use spreadcycle",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:103"
+  },
+  {
+    "section": "tmc2209 stepper_y",
+    "key": "diag_pin",
+    "value": "^gpio3",
+    "comment": "YOU NEED TO JUMP THIS DIAG PIN ON YOUR BOARD FOR SENSORLESS HOMING TO WORK",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:104"
+  },
+  {
+    "section": "tmc2209 stepper_y",
+    "key": "driver_SGTHRS",
+    "value": "255",
+    "comment": "this is set to 255 which is the MAX sensitivity for sensorless homing, you will need to tune this later",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:105"
+  },
+  {
+    "section": "stepper_z",
+    "key": "step_pin",
+    "value": "gpio19",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:112"
+  },
+  {
+    "section": "stepper_z",
+    "key": "dir_pin",
+    "value": "!gpio28",
+    "comment": "Remove the ! before gpio28 if motor direction is inverted.",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:113"
+  },
+  {
+    "section": "stepper_z",
+    "key": "enable_pin",
+    "value": "!gpio2",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:114"
+  },
+  {
+    "section": "stepper_z",
+    "key": "rotation_distance",
+    "value": "8",
+    "comment": "For T8x8 integrated lead screw",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:115"
+  },
+  {
+    "section": "stepper_z",
+    "key": "microsteps",
+    "value": "32",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:116"
+  },
+  {
+    "section": "stepper_z",
+    "key": "endstop_pin",
+    "value": "^gpio25",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:117"
+  },
+  {
+    "section": "stepper_z",
+    "key": "position_endstop",
+    "value": "120",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:118"
+  },
+  {
+    "section": "stepper_z",
+    "key": "position_max",
+    "value": "120",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:119"
+  },
+  {
+    "section": "stepper_z",
+    "key": "position_min",
+    "value": "-1.5",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:120"
+  },
+  {
+    "section": "stepper_z",
+    "key": "homing_speed",
+    "value": "20",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:121"
+  },
+  {
+    "section": "stepper_z",
+    "key": "second_homing_speed",
+    "value": "3.0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:122"
+  },
+  {
+    "section": "stepper_z",
+    "key": "homing_retract_dist",
+    "value": "3.0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:123"
+  },
+  {
+    "section": "tmc2209 stepper_z",
+    "key": "uart_pin",
+    "value": "gpio9",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:127"
+  },
+  {
+    "section": "tmc2209 stepper_z",
+    "key": "tx_pin",
+    "value": "gpio8",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:128"
+  },
+  {
+    "section": "tmc2209 stepper_z",
+    "key": "uart_address",
+    "value": "1",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:129"
+  },
+  {
+    "section": "tmc2209 stepper_z",
+    "key": "interpolate",
+    "value": "False",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:130"
+  },
+  {
+    "section": "tmc2209 stepper_z",
+    "key": "sense_resistor",
+    "value": "0.110",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:135"
+  },
+  {
+    "section": "tmc2209 stepper_z",
+    "key": "stealthchop_threshold",
+    "value": "0",
+    "comment": "Set to 999999 to turn stealthchop on, and 0 to use spreadcycle",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:136"
+  },
+  {
+    "section": "extruder",
+    "key": "step_pin",
+    "value": "gpio14",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:143"
+  },
+  {
+    "section": "extruder",
+    "key": "dir_pin",
+    "value": "gpio13",
+    "comment": "Add ! if moving opposite direction",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:144"
+  },
+  {
+    "section": "extruder",
+    "key": "enable_pin",
+    "value": "!gpio15",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:145"
+  },
+  {
+    "section": "extruder",
+    "key": "rotation_distance",
+    "value": "22.23",
+    "comment": "See calibrating rotation_distance on extruders doc",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:147"
+  },
+  {
+    "section": "extruder",
+    "key": "gear_ratio",
+    "value": "50:10",
+    "comment": "For Mini Afterburner",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:148"
+  },
+  {
+    "section": "extruder",
+    "key": "microsteps",
+    "value": "32",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:149"
+  },
+  {
+    "section": "extruder",
+    "key": "nozzle_diameter",
+    "value": "0.400",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:150"
+  },
+  {
+    "section": "extruder",
+    "key": "filament_diameter",
+    "value": "1.750",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:151"
+  },
+  {
+    "section": "extruder",
+    "key": "heater_pin",
+    "value": "gpio23",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:152"
+  },
+  {
+    "section": "extruder",
+    "key": "sensor_pin",
+    "value": "gpio27",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:156"
+  },
+  {
+    "section": "extruder",
+    "key": "control",
+    "value": "pid",
+    "comment": "Do PID calibration after initial checks",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:157"
+  },
+  {
+    "section": "extruder",
+    "key": "pid_Kp",
+    "value": "28.182",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:158"
+  },
+  {
+    "section": "extruder",
+    "key": "pid_Ki",
+    "value": "1.978",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:159"
+  },
+  {
+    "section": "extruder",
+    "key": "pid_Kd",
+    "value": "100.397",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:160"
+  },
+  {
+    "section": "extruder",
+    "key": "min_temp",
+    "value": "0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:161"
+  },
+  {
+    "section": "extruder",
+    "key": "max_temp",
+    "value": "270",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:162"
+  },
+  {
+    "section": "extruder",
+    "key": "min_extrude_temp",
+    "value": "170",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:163"
+  },
+  {
+    "section": "extruder",
+    "key": "max_extrude_only_distance",
+    "value": "150",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:164"
+  },
+  {
+    "section": "extruder",
+    "key": "max_extrude_cross_section",
+    "value": "0.8",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:165"
+  },
+  {
+    "section": "extruder",
+    "key": "pressure_advance",
+    "value": "0.0",
+    "comment": "See tuning pressure advance doc",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:166"
+  },
+  {
+    "section": "extruder",
+    "key": "pressure_advance_smooth_time",
+    "value": "0.040",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:167"
+  },
+  {
+    "section": "tmc2209 extruder",
+    "key": "uart_pin",
+    "value": "gpio9",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:170"
+  },
+  {
+    "section": "tmc2209 extruder",
+    "key": "tx_pin",
+    "value": "gpio8",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:171"
+  },
+  {
+    "section": "tmc2209 extruder",
+    "key": "uart_address",
+    "value": "3",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:172"
+  },
+  {
+    "section": "tmc2209 extruder",
+    "key": "interpolate",
+    "value": "False",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:173"
+  },
+  {
+    "section": "tmc2209 extruder",
+    "key": "sense_resistor",
+    "value": "0.110",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:180"
+  },
+  {
+    "section": "tmc2209 extruder",
+    "key": "stealthchop_threshold",
+    "value": "0",
+    "comment": "Set to 0 for spreadcycle, avoid using stealthchop on extruder",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:181"
+  },
+  {
+    "section": "heater_bed",
+    "key": "heater_pin",
+    "value": "gpio21",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:188"
+  },
+  {
+    "section": "heater_bed",
+    "key": "sensor_pin",
+    "value": "gpio26",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:192"
+  },
+  {
+    "section": "heater_bed",
+    "key": "smooth_time",
+    "value": "3.0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:193"
+  },
+  {
+    "section": "heater_bed",
+    "key": "min_temp",
+    "value": "0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:195"
+  },
+  {
+    "section": "heater_bed",
+    "key": "max_temp",
+    "value": "120",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:196"
+  },
+  {
+    "section": "heater_bed",
+    "key": "control",
+    "value": "pid",
+    "comment": "Do PID calibration after initial checks",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:197"
+  },
+  {
+    "section": "heater_bed",
+    "key": "pid_kp",
+    "value": "68.453",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:198"
+  },
+  {
+    "section": "heater_bed",
+    "key": "pid_ki",
+    "value": "2.749",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:199"
+  },
+  {
+    "section": "heater_bed",
+    "key": "pid_kd",
+    "value": "426.122",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:200"
+  },
+  {
+    "section": "heater_fan hotend_fan",
+    "key": "pin",
+    "value": "gpio18",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:207"
+  },
+  {
+    "section": "heater_fan hotend_fan",
+    "key": "max_power",
+    "value": "1.0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:208"
+  },
+  {
+    "section": "heater_fan hotend_fan",
+    "key": "kick_start_time",
+    "value": "0.5",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:209"
+  },
+  {
+    "section": "heater_fan hotend_fan",
+    "key": "heater",
+    "value": "extruder",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:210"
+  },
+  {
+    "section": "heater_fan hotend_fan",
+    "key": "heater_temp",
+    "value": "50.0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:211"
+  },
+  {
+    "section": "fan",
+    "key": "pin",
+    "value": "gpio17",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:215"
+  },
+  {
+    "section": "fan",
+    "key": "max_power",
+    "value": "1.0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:216"
+  },
+  {
+    "section": "fan",
+    "key": "kick_start_time",
+    "value": "0.5",
+    "comment": "Depending on your fan, you may need to increase this value if your fan will not start",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:217"
+  },
+  {
+    "section": "fan",
+    "key": "off_below",
+    "value": "0.13",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:218"
+  },
+  {
+    "section": "fan",
+    "key": "cycle_time",
+    "value": "0.010",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:219"
+  },
+  {
+    "section": "controller_fan MCU_fan",
+    "key": "pin",
+    "value": "gpio20",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:222"
+  },
+  {
+    "section": "controller_fan MCU_fan",
+    "key": "max_power",
+    "value": "1.0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:223"
+  },
+  {
+    "section": "controller_fan MCU_fan",
+    "key": "kick_start_time",
+    "value": "0.5",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:224"
+  },
+  {
+    "section": "controller_fan MCU_fan",
+    "key": "heater",
+    "value": "extruder",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:225"
+  },
+  {
+    "section": "idle_timeout",
+    "key": "timeout",
+    "value": "1800",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:242"
+  },
+  {
+    "section": "homing_override",
+    "key": "axes",
+    "value": "xyz",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:245"
+  },
+  {
+    "section": "homing_override",
+    "key": "set_position_z",
+    "value": "0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:246"
+  },
+  {
+    "section": "bed_screws",
+    "key": "screw1",
+    "value": "60,5",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:271"
+  },
+  {
+    "section": "bed_screws",
+    "key": "screw1_name",
+    "value": "front screw",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:272"
+  },
+  {
+    "section": "bed_screws",
+    "key": "screw2",
+    "value": "5,115",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:273"
+  },
+  {
+    "section": "bed_screws",
+    "key": "screw2_name",
+    "value": "back left",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:274"
+  },
+  {
+    "section": "bed_screws",
+    "key": "screw3",
+    "value": "115,115",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:275"
+  },
+  {
+    "section": "bed_screws",
+    "key": "screw3_name",
+    "value": "back right",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:276"
+  },
+  {
+    "section": "neopixel board_rgb",
+    "key": "pin",
+    "value": "gpio24",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:283"
+  },
+  {
+    "section": "neopixel board_rgb",
+    "key": "chain_count",
+    "value": "1",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:284"
+  },
+  {
+    "section": "neopixel board_rgb",
+    "key": "color_order",
+    "value": "GRB",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:285"
+  },
+  {
+    "section": "neopixel board_rgb",
+    "key": "initial_RED",
+    "value": "0.0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:286"
+  },
+  {
+    "section": "neopixel board_rgb",
+    "key": "initial_GREEN",
+    "value": "0.1",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:287"
+  },
+  {
+    "section": "neopixel board_rgb",
+    "key": "initial_BLUE",
+    "value": "0.0",
+    "comment": "",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:288"
+  }
+]

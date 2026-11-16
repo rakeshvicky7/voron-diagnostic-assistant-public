@@ -1,0 +1,290 @@
+[
+ {
+  "id": "frame",
+  "title": "Frame",
+  "pages": "17-67",
+  "cad": [
+   "^/[^/]+/Frame/(Extrusions|Hardware|Printed Parts)[^/]*$"
+  ],
+  "simple": [
+   "#frame"
+  ],
+  "parts": [],
+  "what": "The frame is the skeleton of the printer. It is built from 15 x 15 mm aluminium extrusions (MakerBeam XL).",
+  "connect": "The extrusions join with blind joints: an M3 button-head screw in the end of one extrusion slides into the slot of the next one and is tightened with a 2 mm hex driver through a small access hole. M3 nuts are pre-loaded into the slots now, because the parts that come later screw into them.",
+  "tip": "Build on a flat surface and check that the frame is square before the final tightening. Count the pre-loaded nuts in every slot: you cannot add them later without opening the frame.",
+  "n": 1
+ },
+ {
+  "id": "rails",
+  "title": "Linear rails (Y and Z)",
+  "pages": "17-67, 91-113",
+  "cad": [
+   "^/[^/]+/Frame/Linear Rails$"
+  ],
+  "simple": [
+   "y_linear_rails",
+   "z_rails"
+  ],
+  "parts": [
+   "y_linear_rails",
+   "z_rails"
+  ],
+  "what": "MGN7 linear rails guide the moving parts. Two Y rails carry the gantry front to back; two Z rails at the rear carry the bed up and down.",
+  "connect": "Each rail is screwed to a frame extrusion, into nuts that were pre-loaded in the slot. The small carriage on each rail later carries the X/Y joints (Y rails) or the bed frame (Z rails).",
+  "tip": "Do not let a carriage slide off its rail: the tiny balls fall out. The carriages must glide freely along the whole rail.",
+  "n": 2
+ },
+ {
+  "id": "ab_drives",
+  "title": "A/B drives (XY motors)",
+  "pages": "68-82",
+  "cad": [
+   "^/[^/]+/Gantry/AB Drives$"
+  ],
+  "simple": [
+   "xy_motors_drivers"
+  ],
+  "parts": [
+   "xy_motors_drivers",
+   "xy_pulleys_idlers"
+  ],
+  "what": "Two NEMA14 stepper motors, A and B, sit at the two rear corners. Together they move the toolhead in X and Y (CoreXY).",
+  "connect": "Each motor is held between an upper and a lower printed drive frame with long M3 screws and shims, and the unit is screwed to the top rear of the frame. A GT2 20-tooth pulley is fixed on each motor shaft with two grub screws; the belt will run over it.",
+  "tip": "The manual calls the pulley grub screws 'the root of all issues': one grub screw must sit on the flat of the shaft and both must be tight. Set the pulley height with the printed jig.",
+  "n": 3
+ },
+ {
+  "id": "idlers",
+  "title": "A/B idlers (front)",
+  "pages": "83-90",
+  "cad": [
+   "^/[^/]+/Gantry/Idlers$"
+  ],
+  "simple": [
+   "xy_pulleys_idlers"
+  ],
+  "parts": [
+   "xy_pulleys_idlers"
+  ],
+  "what": "The front idlers turn the belts around at the front corners. Each idler is a stack of F623 bearings with shims.",
+  "connect": "The front screws go into the threaded hole in the end of the frame extrusion; the rear screws go into pre-loaded nuts. The A idler goes on the same side as the A drive, the B idler on the side of the B drive.",
+  "tip": "Both bearing stacks must have the same height, otherwise the belt runs off to one side.",
+  "n": 4
+ },
+ {
+  "id": "z_axis",
+  "title": "Z axis (motor and lead screw)",
+  "pages": "91-113",
+  "cad": [
+   "^/[^/]+/Z Axis/Z Motor Assembly$"
+  ],
+  "simple": [
+   "z_motor_leadscrew",
+   "z_endstop"
+  ],
+  "parts": [
+   "z_motor_leadscrew",
+   "z_endstop",
+   "z_rails"
+  ],
+  "what": "A NEMA17 motor with an integrated T8 lead screw moves the bed up and down. The Z endstop switch tells the controller where the bed is.",
+  "connect": "The motor sits on its mount at the bottom rear of the frame, with the lead screw pointing up between the two Z rails. A nut on the lead screw is fixed to the bed frame, so turning the screw lifts or lowers the bed along the Z rails.",
+  "tip": "Keep the screws loose, move the bed up and down by hand over the whole travel so everything lines up, then tighten. A tight spot means the rails and the screw are not parallel.",
+  "n": 5
+ },
+ {
+  "id": "x_axis",
+  "title": "X axis (gantry)",
+  "pages": "114-130",
+  "cad": [
+   "^/[^/]+/Gantry/X Axis$"
+  ],
+  "simple": [
+   "x_linear_rail"
+  ],
+  "parts": [
+   "x_linear_rail",
+   "y_linear_rails"
+  ],
+  "what": "The X axis is the beam that crosses the printer from left to right. It carries the X rail, on which the toolhead slides.",
+  "connect": "The beam is held between the left and the right X/Y joint. Each X/Y joint is screwed to the carriage of a Y rail, so the whole beam moves front to back. The joints also carry small bearings that guide the belts.",
+  "tip": "Leave the six joint screws slightly loose, push the X axis front to back until it moves freely over the full travel, then tighten. The left and right joints are mirror parts.",
+  "n": 6
+ },
+ {
+  "id": "belts",
+  "title": "A/B belts",
+  "pages": "131-143",
+  "cad": [
+   "^/[^/]+/Gantry/Belts$"
+  ],
+  "simple": [
+   "xy_belts"
+  ],
+  "parts": [
+   "xy_belts",
+   "xy_pulleys_idlers",
+   "xy_motors_drivers"
+  ],
+  "what": "Two GT2 belts, A and B, carry the motion of the two motors to the toolhead in the CoreXY pattern.",
+  "connect": "Each belt runs from the X carriage, around the bearings in the X/Y joints, around a front idler and over the toothed pulley of its motor, and back to the X carriage, where both ends are clamped. The two belt paths are stacked: the A belt sits below the B belt.",
+  "tip": "Cut both belts to exactly the same length. The teeth may only touch toothed pulleys; the smooth back runs on the smooth bearings. Tension both to about 110 Hz (plucked over 150 mm), equal on A and B.",
+  "n": 7
+ },
+ {
+  "id": "bed",
+  "title": "Print bed",
+  "pages": "144-155",
+  "cad": [
+   "^/[^/]+/Z Axis/Bed Assembly$"
+  ],
+  "simple": [
+   "bed_plate_carrier",
+   "bed_heater",
+   "bed_thermistor",
+   "bed_thermal_fuse"
+  ],
+  "parts": [
+   "bed_plate_carrier",
+   "bed_heater",
+   "bed_thermistor",
+   "bed_thermal_fuse"
+  ],
+  "what": "The bed is a 120 x 120 mm aluminium plate with a magnetic sheet on top and a 60 W heater pad underneath. A thermistor measures its temperature and a thermal fuse protects it.",
+  "connect": "The heater pad is stuck to the cleaned underside of the plate; the thermal fuse is wired in series with the heater. The plate sits on three screws with springs on the bed frame, and the bed frame is screwed to the carriages of the two Z rails and to the lead-screw nut.",
+  "tip": "The side of the plate with the single hole is the front. The three spring screws are used later to level (tram) the bed.",
+  "n": 8
+ },
+ {
+  "id": "print_head",
+  "title": "Print head (Mini Stealthburner)",
+  "pages": "156-189",
+  "cad": [
+   "^/[^/]+/Gantry/Mini Stealthburner$"
+  ],
+  "simple": [
+   "toolhead",
+   "extruder_gears_guidler",
+   "extruder_motor",
+   "heatbreak_ptfe",
+   "hotend_heater",
+   "hotend_thermistor",
+   "nozzle",
+   "hotend_fan",
+   "part_cooling_fan"
+  ],
+  "parts": [
+   "toolhead",
+   "extruder_gears_guidler",
+   "extruder_motor",
+   "heatbreak_ptfe",
+   "hotend_heater",
+   "hotend_thermistor",
+   "nozzle",
+   "hotend_fan",
+   "part_cooling_fan"
+  ],
+  "what": "The print head melts and places the plastic. It contains the extruder (motor, drive gears and guidler that push the filament), the hotend (heater, thermistor, heatbreak and nozzle), the hotend fan and two part-cooling blowers.",
+  "connect": "The print head is screwed to the X carriage, which slides on the X rail; the belt ends are clamped in the same carriage. The extruder sits directly on top of the hotend, and a short PTFE tube guides the filament between them. Heater, thermistor, fans and motor plug into the toolhead cable.",
+  "tip": "Mount the hotend fan so the air blows into the cowling (see the arrows on the fan). The extruder gears must turn freely before you close the latch.",
+  "n": 9
+ },
+ {
+  "id": "electronics",
+  "title": "Electronics and wiring",
+  "pages": "190-212",
+  "cad": [
+   "^/[^/]+/Electronics$"
+  ],
+  "simple": [
+   "power_supply",
+   "controller_board",
+   "host_computer",
+   "firmware_config_macros",
+   "mains_power_input",
+   "dc_power_wiring",
+   "umbilical_wiring"
+  ],
+  "parts": [
+   "power_supply",
+   "controller_board",
+   "host_computer",
+   "mains_power_input",
+   "dc_power_wiring",
+   "umbilical_wiring"
+  ],
+  "what": "The power supply turns mains power into 24 V. The controller board (SKR Pico) drives the motors, heaters and fans. The Raspberry Pi runs Klipper and tells the controller what to do.",
+  "connect": "The boards clip onto printed DIN mounts. Mains goes from the inlet to the power supply (L, N and earth); 24 V goes from the power supply to the controller board. The motors, endstop, bed heater and bed thermistor plug into the controller board, and the toolhead cable (umbilical) carries heater, thermistor, fans and extruder motor to the print head. The Raspberry Pi connects to the controller board by USB.",
+  "tip": "Mains voltage is dangerous: work unplugged, use ferrules or good crimps, and fit the finger guard over the power-supply terminals. Bad crimps are a common cause of later faults.",
+  "n": 10
+ },
+ {
+  "id": "skirts",
+  "title": "Skirts, feet and display",
+  "pages": "213-222",
+  "cad": [
+   "^/[^/]+/Skirts$"
+  ],
+  "simple": [
+   "#skirts"
+  ],
+  "parts": [],
+  "what": "The skirts close the bottom of the printer around the electronics, the feet carry it, and the small display sits in the front skirt.",
+  "connect": "The printed skirts are screwed to the bottom extrusions of the frame with M3 screws into pre-loaded nuts. The display plugs into the Raspberry Pi with a USB cable.",
+  "tip": "A 2 mm ball-end driver makes the skirt screws much easier to reach.",
+  "n": 11
+ },
+ {
+  "id": "panels",
+  "title": "Panels and door",
+  "pages": "223-234",
+  "cad": [
+   "^/[^/]+/Panels & Clips/(Opaque Panels|Side Panels|Door Assembly)$"
+  ],
+  "simple": [
+   "#deck",
+   "#panels"
+  ],
+  "parts": [],
+  "what": "Panels close the printer so it stays warm inside (needed for ABS). The deck panel separates the print chamber from the electronics; the door gives access at the front.",
+  "connect": "The panels lie against the frame and are held by printed clips that screw into pre-loaded nuts. The motor panel at the back carries the connector for the toolhead cable. The door hangs on two hinges and closes with magnets.",
+  "tip": "Mind the magnet polarity in the door latch and handle: they must attract each other.",
+  "n": 12
+ },
+ {
+  "id": "tophat",
+  "title": "Tophat",
+  "pages": "235-249",
+  "cad": [
+   "^/[^/]+/Extrusion Tophat$"
+  ],
+  "simple": [],
+  "parts": [],
+  "what": "The tophat is the raised lid. It gives room above the print head for the toolhead cable and the filament tube and keeps the chamber closed.",
+  "connect": "It is a small frame of extrusions with four identical printed corner pieces and clear panels held by clips. It is attached to the top of the printer with hinges, so it can be opened.",
+  "tip": "Pre-load the M3 nuts in the tophat extrusions before joining them, as you did for the main frame.",
+  "n": 13
+ },
+ {
+  "id": "spool",
+  "title": "Spool holder and filament",
+  "pages": "213-234",
+  "cad": [
+   "^/[^/]+/Panels & Clips/1515 Spool Holder$",
+   "^/[^/]+/Filament Spool$"
+  ],
+  "simple": [
+   "filament_material",
+   "filament_runout_sensor"
+  ],
+  "parts": [
+   "filament_material",
+   "filament_runout_sensor"
+  ],
+  "what": "The spool holder carries the filament spool at the back of the printer.",
+  "connect": "The holder is a short extrusion screwed to the rear of the frame. The filament runs from the spool through a PTFE tube into the top of the extruder.",
+  "tip": "The spool must turn freely and the tube must not have sharp bends, otherwise the extruder cannot pull the filament.",
+  "n": 14
+ }
+]

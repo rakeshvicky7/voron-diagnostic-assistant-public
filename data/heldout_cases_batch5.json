@@ -1,0 +1,23 @@
+[
+ {"id": "H33", "part": "bed_plate_carrier", "ok": ["bed_plate_carrier"], "evidence": "high (poster removed the film, first layer good)", "machine": "Voron Trident (same found on his V0)",
+  "source": "https://forum.vorondesign.com/threads/theres-no-fool-like-an-old-fool.1571/", "cause": "protective film left on the spring-steel sheet, shrinks and ruffles with heat",
+  "opener": "There is a low spot on the bed that seems to wander around, and the bed meshes look terrible and change from one print to the next."},
+ {"id": "H34", "part": "dc_power_wiring", "ok": ["dc_power_wiring", "power_supply"], "evidence": "high (poster confirmed after many hours of printing)", "machine": "Voron 0.2 (Fysetc kit)",
+  "source": "https://forum.vorondesign.com/threads/fysetc-0-2-r1-print-failures-under-voltage-reset.1685/", "cause": "missing ground wire; an extra ground from the PSU fixed it",
+  "opener": "Only about 1 in 3 prints completes. 30 minutes or more into a print I get TMC GSTAT errors: the extruder driver reports a reset and the X or Y driver reports undervoltage. I already replaced the controller board and the power supply, lowered the motor currents and removed the LEDs."},
+ {"id": "H35", "part": "nozzle", "ok": ["nozzle", "heatbreak_ptfe"], "evidence": "high (poster found the cause)", "machine": "Voron 0.1",
+  "source": "https://forum.vorondesign.com/threads/mosquito-nozzle-leaking.406/", "cause": "wrong nozzle type (too short), gap at the threads",
+  "opener": "I keep getting plastic oozing through the threads and down the outside of the nozzle. The manufacturer sent me a new heater block but that did not fix it."},
+ {"id": "H36", "part": "extruder_gears_guidler", "ok": ["extruder_gears_guidler"], "evidence": "high (poster replaced the insert, solved)", "machine": "Voron (Galileo 2 extruder)",
+  "source": "https://forum.vorondesign.com/threads/galileo2-pla-issue.1490/", "cause": "tension screw insert faulty, too little grip on the filament",
+  "opener": "Since I switched from ABS to PLA the extrusion is inconsistent and I hear clicking. I replaced the hotend and nozzle without improvement. When I open the extruder the gear teeth are filled with ground filament."},
+ {"id": "H37", "part": "filament_material", "ok": ["filament_material"], "evidence": "high (thread marked Solved)", "machine": "Voron 2.4",
+  "source": "https://forum.vorondesign.com/threads/print-splitting-at-certain-height.313/", "cause": "kink in the filament on the spool, high resistance in the filament path",
+  "opener": "On tall prints, at around 8 inches height, the layers start to look like they are splitting. When I extrude by hand the line starts thick and smooth and then gets thin and rough, and the filament tube jerks."},
+ {"id": "H38", "part": "host_computer", "ok": ["host_computer", "firmware_config_macros"], "evidence": "high (thread marked Solved)", "machine": "Voron Trident",
+  "source": "https://forum.vorondesign.com/threads/random-halts-freezes-of-klipper-rpi-software-hardware.2148/", "cause": "64-bit OS on a Raspberry Pi 3B+",
+  "opener": "The printer randomly freezes during prints, after 20, 35, 60 or 80 minutes. The web page and the screen stop responding, only a power cycle helps. There are no errors in any log. I changed USB cables, ports and the Pi power supply."},
+ {"id": "H39", "part": "nozzle", "ok": ["nozzle", "heatbreak_ptfe"], "evidence": "medium (poster found the nozzle loose)", "machine": "Voron (Rapido hotend)",
+  "source": "https://forum.vorondesign.com/threads/phaetus-rapido-2-filament-leakage.1543/", "cause": "loose nozzle leaking at the threads",
+  "opener": "After long prints I found blobs of old filament color getting deposited on new prints. Under the silicone sock there is a large blob of plastic around the heater block and the thermistor."}
+]

@@ -1,0 +1,2 @@
+component;failure_mode;expected_symptom;check;correct_value_or_state;source_document;location
+EXAMPLE hotend nozzle;nozzle_diameter in config differs from installed nozzle;lines too thick or thin, dimensions off;compare nozzle marking with [extruder] nozzle_diameter;0.400;bigtreetech-skr-pico-v1.0.cfg;line of nozzle_diameter

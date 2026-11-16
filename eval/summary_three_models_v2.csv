@@ -1,0 +1,16 @@
+model,arm,n,top1,top3_primary,top3,no_valid_answer
+Qwen,A,58,22,34,59,0
+Qwen,B,58,29,40,62,0
+Qwen,C,58,33,57,81,0
+Qwen,C2,58,41,57,74,0
+Qwen,D,58,14,24,41,15
+Llama,A,58,22,41,64,0
+Llama,B,58,22,34,55,0
+Llama,C,58,31,57,78,0
+Llama,C2,57,37,47,67,0
+Llama,D,58,14,21,29,22
+Mistral,A,58,21,52,72,0
+Mistral,B,58,22,33,48,14
+Mistral,C,58,24,48,69,13
+Mistral,C2,58,43,57,76,4
+Mistral,D,58,14,24,33,23

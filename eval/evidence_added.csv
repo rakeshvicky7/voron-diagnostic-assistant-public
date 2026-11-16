@@ -1,0 +1,36 @@
+question slot,answer,parts added,source / reason
+motor_behaviour,Clicks / jumps back,hotend_fan; extruder_motor; slicer_settings,"hotend_fan card (heat creep -> jam); Klipper: extruder skips when feed force > motor torque (weak/low-current motor, flow above melt rate)"
+flow_state,Less than normal / gaps in lines,extruder_motor; firmware_config_macros; hotend_heater,extruder_motor card (missed steps); config [extruder] rotation_distance 22.23; melt rate falls with temperature (min_extrude_temp 170)
+flow_state,Nothing at all,slicer_settings; extruder_motor,config min_extrude_temp 170 (cold extrusion blocked); open motor coil
+problem_kind,"Plastic problem (none, too little, blobs, leaks)",hotend_fan; part_cooling_fan; firmware_config_macros,hotend_fan card (heat creep); part_cooling_fan card (overhang/bridge quality); config rotation_distance
+problem_kind,First layer / bed problem,z_rails; z_motor_leadscrew; bed_thermistor; bed_heater; toolhead,"z_rails / z_motor_leadscrew cards (binding, lost Z steps); bed too cold for ABS (slicer bed 90-100 C); loose toolhead/nozzle height"
+first_layer,Changes from print to print,z_rails; z_motor_leadscrew; toolhead,Z binding loses steps differently per homing; loose toolhead parts
+first_layer,Too high / not sticking everywhere,bed_heater; bed_thermistor,slicer profile bed 100/90 C for ABS; a cold or mis-read bed stops adhesion
+problem_kind,An error message / Klipper shutdown,dc_power_wiring; bed_thermal_fuse; hotend_heater; bed_heater; z_endstop; power_supply,Klipper verify_heater and MCU errors; documentation: bad crimps cause resets; thermal fuse in series with bed heater (BOM:46)
+stop_type,Klipper shows an error and shuts down,hotend_heater; bed_heater; bed_thermistor; bed_thermal_fuse; host_computer; z_endstop,"Klipper verify_heater ('not heating at expected rate'), ADC range check, homing errors ('Endstop still triggered')"
+mcu_state,Disconnects / 'Lost communication' during prints,dc_power_wiring,"dc_power_wiring card: bad crimp -> board resets, 'Lost communication'"
+stop_type,"The Pi stays on, but motors and heaters stop ('Lost communication' / MCU error)",power_supply,24 V sag resets the board while the 5 V Pi stays on
+when,Only while heating,bed_thermal_fuse; dc_power_wiring; bed_thermistor; controller_board,heating draws the highest current (bed 60 W + hotend): weak crimps and an open fuse show then
+shift_axis,Diagonal / both,xy_pulleys_idlers,CoreXY kinematics (manual): one slipping motor pulley moves the head along a diagonal
+noise,Clicking or thumping,x_linear_rail; y_linear_rails,binding carriage -> motor loses steps with a clicking sound
+when,Right after the first layer,xy_pulleys_idlers; x_linear_rail; y_linear_rails,"slicer profile: 30 mm/s first layer, 100-125 mm/s after; more force needed"
+restart,Stays off until I switch it on again,mains_power_input,mains_power_input card: tripped or unplugged supply stays off
+surface,Ringing / ghosting (ripples after corners),toolhead; xy_belts,toolhead card (loose parts); belts card (low tension -> ringing); manual p.141 110 Hz
+surface,Skewed: squares are not square,xy_belts,"manual p.142: equal A/B belt tension, unequal tension skews CoreXY"
+surface,"Stringing, rough or bubbly surface",filament_material; slicer_settings,"filament card (wet filament pops, strings); slicer retraction"
+surface,"Drooping overhangs, curled corners",part_cooling_fan; slicer_settings,config [fan]; slicer fan from layer 4
+surface,"Blobs, too much plastic",firmware_config_macros; slicer_settings,config [extruder] rotation_distance (over-extrusion)
+surface,Wavy or uneven layer lines (Z banding),z_motor_leadscrew; z_rails,"Z lead screw / rails cards (binding, wobble)"
+fuse_state,Open (OL),bed_thermal_fuse,BOM:46 150 C thermal fuse in series with the bed heater; open = blown
+fuse_state,About 0 ohm (closed),bed_heater; bed_thermistor,"fuse is fine, the heater pad or sensor is the cause"
+crimp_tug,"Yes, it resets or flickers",dc_power_wiring,dc_power_wiring card check: 'tug-test each crimp'; documentation: bad crimps
+board_seen,"No, it is missing",controller_board; dc_power_wiring; firmware_config_macros,"Klipper 'Unable to connect': board not powered, dead or wrong serial id"
+board_seen,"Yes, it is listed",host_computer; dc_power_wiring; power_supply,"board enumerates: the USB link, the host or a power dip during printing"
+onset,Right after I changed something,firmware_config_macros; slicer_settings; filament_material,"a change of config, slicer profile or spool explains a sudden new fault"
+onset,Got worse slowly,xy_belts; x_linear_rail; y_linear_rails; z_rails; nozzle; xy_pulleys_idlers; umbilical_wiring; toolhead,"wear parts: belts stretch, rails dry out, nozzles wear and clog, cables fatigue (maintenance page)"
+part_fan_state,"No, it does not spin",part_cooling_fan; umbilical_wiring,config [fan]; part_cooling_fan card
+part_fan_state,"Yes, it spins",slicer_settings; filament_material,fan works: quality problem lies in settings or material
+which_temp,The hotend,hotend_heater; hotend_thermistor; umbilical_wiring; part_cooling_fan; firmware_config_macros,the faulty reading belongs to the hotend circuit
+which_temp,The bed,bed_heater; bed_thermistor; bed_thermal_fuse,"the faulty reading belongs to the bed circuit (heater, thermistor, fuse in series)"
+which_temp,Both,power_supply; dc_power_wiring; controller_board,both heaters share the 24 V supply and the board
+which_temp,"Neither, both look normal",host_computer; controller_board; z_endstop; dc_power_wiring,the stop is not a temperature fault

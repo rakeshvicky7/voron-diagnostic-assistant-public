@@ -1,0 +1,37 @@
+metric,comparison,question,subset,first_only_correct,second_only_correct,exact_McNemar_p_two_sided
+top3,B vs A,Does retrieval over the Voron docs help?,all,7,4,0.5488
+top3,B vs A,Does retrieval over the Voron docs help?,unseen,4,3,1
+top3,B vs A,Does retrieval over the Voron docs help?,real,2,1,1
+top3,C vs B,Does structuring the design information beat searching it as text?,all,14,4,0.0309
+top3,C vs B,Does structuring the design information beat searching it as text?,unseen,5,3,0.7266
+top3,C vs B,Does structuring the design information beat searching it as text?,real,4,1,0.375
+top3,C vs D,Design-based structure vs generic fault guide,all,19,2,0.0002
+top3,C vs D,Design-based structure vs generic fault guide,unseen,9,2,0.0654
+top3,C vs D,Design-based structure vs generic fault guide,real,7,0,0.0156
+top3,C vs A,Structured model vs no knowledge,all,14,1,0.001
+top3,C vs A,Structured model vs no knowledge,unseen,4,1,0.375
+top3,C vs A,Structured model vs no knowledge,real,4,0,0.125
+top3,E vs C,Does adding the generic guide to the structured model help?,all,2,2,1
+top3,E vs C,Does adding the generic guide to the structured model help?,unseen,1,0,1
+top3,E vs C,Does adding the generic guide to the structured model help?,real,0,1,1
+top3,B vs D,Machine docs vs generic guide (both text),all,10,3,0.0923
+top3,B vs D,Machine docs vs generic guide (both text),unseen,6,1,0.125
+top3,B vs D,Machine docs vs generic guide (both text),real,4,0,0.125
+top1,B vs A,Does retrieval over the Voron docs help?,all,5,2,0.4531
+top1,B vs A,Does retrieval over the Voron docs help?,unseen,2,1,1
+top1,B vs A,Does retrieval over the Voron docs help?,real,1,0,1
+top1,C vs B,Does structuring the design information beat searching it as text?,all,5,5,1
+top1,C vs B,Does structuring the design information beat searching it as text?,unseen,3,4,1
+top1,C vs B,Does structuring the design information beat searching it as text?,real,1,1,1
+top1,C vs D,Design-based structure vs generic fault guide,all,10,4,0.1796
+top1,C vs D,Design-based structure vs generic fault guide,unseen,5,3,0.7266
+top1,C vs D,Design-based structure vs generic fault guide,real,2,1,1
+top1,C vs A,Structured model vs no knowledge,all,7,4,0.5488
+top1,C vs A,Structured model vs no knowledge,unseen,2,2,1
+top1,C vs A,Structured model vs no knowledge,real,2,1,1
+top1,E vs C,Does adding the generic guide to the structured model help?,all,5,3,0.7266
+top1,E vs C,Does adding the generic guide to the structured model help?,unseen,2,3,1
+top1,E vs C,Does adding the generic guide to the structured model help?,real,1,1,1
+top1,B vs D,Machine docs vs generic guide (both text),all,6,0,0.0312
+top1,B vs D,Machine docs vs generic guide (both text),unseen,3,0,0.25
+top1,B vs D,Machine docs vs generic guide (both text),real,1,0,1

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Repair assistant · Voron 0.2 Assistant</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/app/ui.css">
+<style>
+body{overflow:hidden}
+#app{display:flex;height:calc(100vh - 54px);position:relative}
+/* plain mode: only the chat, centred */
+#chatcol{flex:1;min-width:0;display:flex;justify-content:center;background:var(--bg)}
+#chatbox{width:100%;max-width:780px;display:flex;flex-direction:column;min-height:0}
+#app.sim #chatcol{flex:none;width:400px;border-left:1px solid var(--line)}
+@media (max-width:1200px){#app.sim #chatcol{width:340px}}
+#app:not(.sim) #drawer,#app:not(.sim) #simcol,#app:not(.sim) #opendrawer{display:none}
+#app:not(.sim) .composer{border:1px solid var(--line);border-radius:14px;margin:0 18px 18px;box-shadow:var(--shadow)}
+/* simulation in the centre */
+#simcol{flex:1;min-width:0;display:flex}#view{flex:1}
+/* sliding settings bar on the left */
+#drawer{width:300px;flex:none;background:var(--surface);border-right:1px solid var(--line);overflow:auto;transition:margin-left .25s ease;padding:14px 16px 24px}
+#app.closed #drawer{margin-left:-300px}
+#drawer h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:18px 0 8px}#drawer h3:first-of-type{margin-top:6px}
+.dhead{display:flex;align-items:center;justify-content:space-between}.dhead b{font-size:15px}
+.set{display:grid;grid-template-columns:1fr 92px;gap:4px 8px;align-items:center;margin:7px 0}.set label{font-size:13px}.set .rng{grid-column:1/3;font-size:11px;color:var(--mut);margin-top:-2px}
+.set input{padding:5px 8px;text-align:right}.set input.err{border-color:var(--bad);box-shadow:0 0 0 3px #fde8e6}.set .rng.err{color:var(--bad)}
+#opendrawer{position:absolute;left:12px;top:12px;z-index:4;box-shadow:var(--shadow)}#app:not(.closed) #opendrawer{display:none}
+.row{display:flex;gap:8px}.row>*{flex:1}
+#chart{width:100%;height:90px;border:1px solid var(--line);border-radius:8px;background:#fafaf8}
+.welcome{margin:auto;text-align:center;padding:30px 20px;max-width:520px}.welcome h2{font-size:24px;margin-bottom:8px}
+</style>
+<script type="importmap">{"imports":{"three":"/vendor/three.module.min.js","three/addons/":"/vendor/addons/"}}</script>
+</head><body>
+<header id="top"></header>
+<div id="app">
+  <button id="opendrawer" class="sm" title="Open the machine settings">☰ Settings</button>
+  <aside id="drawer">
+    <div class="dhead"><b>Machine settings</b><button class="ghost sm" id="closedrawer" title="Close">✕</button></div>
+    <div class="tiny mut">Set the values of your real printer, so the virtual printer behaves like it. Empty = design value.</div>
+    <div id="settings"></div>
+    <div class="row" style="margin-top:10px"><button class="primary sm" id="applyset">Apply</button><button class="sm" id="resetset">Design values</button></div>
+    <h3>Simulation</h3>
+    <div class="row"><button class="sm" id="pause">Pause</button><button class="sm" id="replay">Replay</button></div>
+    <label class="small mut" style="display:block;margin-top:8px">Speed: <b id="spdv">5x</b></label><input id="spd" type="range" min="1" max="30" value="5" style="width:100%">
+    <h3>View</h3>
+    <label class="chk"><input type="checkbox" id="cad" checked> Official CAD model</label>
+    <label class="chk"><input type="checkbox" id="panels" checked> Panels</label>
+    <label class="chk"><input type="checkbox" id="xray"> See through the frame</label>
+    <label class="chk"><input type="checkbox" id="follow"> Camera follows the nozzle</label>
+    <button class="sm" id="resetview" style="margin-top:6px">Reset view</button>
+    <h3>Temperatures</h3><canvas id="chart" width="536" height="180"></canvas><div class="tiny mut">orange = hotend, blue = bed</div>
+  </aside>
+  <div id="simcol"><div class="view" id="view"><div class="banner" id="banner"></div><div class="tip" id="tip"></div><div class="hud" id="hud"></div><div class="viewnote" id="viewnote"></div></div></div>
+  <div id="chatcol"><div id="chatbox" class="chat">
+    <div class="chatlog" id="log"></div>
+    <div class="composer"><textarea id="msg" rows="1" placeholder="Describe the problem with your printer…"></textarea><button class="primary" id="send">Send</button></div>
+  </div></div>
+</div>
+<script type="module">
+import { $, esc, fmt, post, get, topbar, Chat, composer } from '/app/common.js';
+topbar('repair', '<button class="sm" id="newcase">New case</button><button class="sm primary" id="simbtn">Open simulation</button>');
+const chat = Chat($('#log'));
+const st = { session: null, sim: false, stage: 'describe', settings: {}, askedConfig: false, baselineDone: false, ranked: [], shown: new Set(), looks: {}, cur: null, lastRun: null, cards: null, NAMES: {}, RANGES: {}, P: null, text: [] };
+get('/api/info').then(i => { if (i) st.learn = i.learn; });
+const LABEL = k => (st.RANGES[k]?.label || k).replace(/ \(.*\)/, '').replace(/^./, c => c.toUpperCase());
+const fmea = body => post('/api/fmea', { session: st.session, ...body });
+
+// ---------------- start ----------------
+function welcome() {
+  chat.clear();
+  const m = chat.say(fmt('Hello. I help you find and repair faults on the Voron 0.2.\n**Describe what your printer does** in your own words: what you see or hear, when it happens, and any message on the screen.\nIf words are not enough, press **Open simulation**: I replay the fault on the virtual printer and you tell me if it looks the same.'));
+  chat.buttons(m, [{ label: 'Layers shift sideways', keep: true, on: () => userText('My prints have layer shifts, the layers move sideways partway up') },
+    { label: 'Extruder clicks', keep: true, on: () => userText('The extruder clicks and the walls are thin with gaps') },
+    { label: 'ADC out of range', keep: true, on: () => userText('Klipper stops with ADC out of range') }]);
+}
+function newCase() { Object.assign(st, { session: null, stage: st.sim ? (st.askedConfig ? 'describe' : 'config') : 'describe', baselineDone: false, ranked: [], shown: new Set(), looks: {}, nsc: 0, cur: null, cards: null, text: [] });
+  if (st.P) { st.P.glow = new Set(); st.P.run({ settings: st.settings }); } welcome(); if (st.sim && !st.askedConfig) askConfig(); }
+$('#newcase').onclick = newCase;
+
+// ---------------- what the user types ----------------
+async function userText(t) {
+  chat.me(t);
+  if (st.sim && st.stage === 'config') return settingsText(t);
+  return describe(t);
+}
+composer($('#msg'), $('#send'), userText);
+
+async function describe(t) {
+  st.text.push(t); st.looks = {}; const done = chat.typing('Reading your description…');
+  let r = await fmea({ message: t });
+  if (r.error || r.type === 'notice') { done(); chat.say(esc(r.error || r.text)); return; }
+  st.session = r.session; st.ranked = r.ranked || [];
+  // The symptom graph answers at once. The language model then re-ranks the suspects (slow on a laptop without a strong GPU): its result is used when it arrives.
+  const sid = r.session, cards0 = () => st.cards;
+  const refined = r.refine ? fmea({ refine: true }).then(r2 => { if (r2.error || !r2.ranked || st.session !== sid) return null; st.ranked = r2.ranked; return r2; }).catch(() => null) : Promise.resolve(null);
+  if (!st.sim) { done(); showCards(r); const shown = cards0(); refined.then(r2 => { if (r2 && st.cards === shown && shown && !st.sim) { st.cards.remove(); showCards(r2); } }); return; }
+  await Promise.race([refined, new Promise(res => setTimeout(res, 8000))]);      // simulation mode: give the language model up to 8 seconds, then start with what we have
+  done(); nextScenario();
+}
+
+// ---------------- plain mode: parts to check, in order ----------------
+function showCards(r) {
+  const R = r.ranked || [];
+  const card = (g, i) => `<div class="card"><span class="pct">${Math.round(g.p * 100)}%</span><b>${i + 1}. ${esc(g.name)}</b><div>Likely failure: ${esc(g.mode)}</div>` +
+    ((g.matched || []).length ? `<div class="tiny mut">You described: ${g.matched.map(esc).join('; ')}</div>` : '') + `<div style="margin-top:4px"><b>Check:</b> ${esc(g.check)}</div><div class="src">Source: ${esc(g.source)}</div><div class="btns" data-part="${g.part}"></div></div>`;
+  const sim = (r.similar || [])[0];
+  const m = chat.say(`Check these parts in this order${r.refined ? ' <span class="tiny mut">(refined by the language model)</span>' : ''}:` +
+    (sim ? `<div class="src">Similar confirmed case (${Math.round(sim.sim * 100)}% alike): “${esc(sim.text.slice(0, 100))}” → ${esc(sim.part)}</div>` : '') + R.map(card).join(''));
+  st.cards = m;
+  m.querySelectorAll('.btns[data-part]').forEach(row => { const g = R.find(x => x.part === row.dataset.part);
+    for (const [label, cls, fn] of [['This was it', 'primary', () => { st.cards = null; chat.me(`It was the ${g.name}.`); confirmFault(g); }],
+        ['Checked, it is fine', '', async () => { st.cards = null; chat.me(`The ${g.name} is fine.`); const r2 = await fmea({ exclude: g.part }); st.ranked = r2.ranked || []; showCards(r2); }]]) {
+      const b = document.createElement('button'); b.className = 'sm ' + cls; b.textContent = label; b.onclick = () => { m.querySelectorAll('button').forEach(x => x.disabled = true); fn(); }; row.appendChild(b); } });
+  chat.buttons(m, [{ label: 'See it in the simulation', keep: true, on: () => enterSim() }, { label: 'Ask me questions instead', keep: true, on: () => askQuestions() }]);
+}
+function repairHtml(g) { const steps = g.fix || [];
+  return `<b>How to repair: ${esc(g.name)}</b><div class="tiny mut">${esc(g.mode)}</div>` + (steps.length ? `<ol>${steps.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : `<div>${esc(g.check)}</div>`) + `<div class="src">Source: ${esc(g.source)}</div>`; }
+async function confirmFault(g) {
+  post('/api/fmea', { session: st.session, confirm: g.part }); st.stage = 'done';
+  const m = chat.say(repairHtml(g) + (st.learn === false ? '' : '<div style="margin-top:6px">I saved this case, so I recognise it faster next time.</div>'));
+  const btns = [{ label: 'New case', on: newCase }];
+  if (st.sim) btns.unshift({ label: 'Show the printer after the repair', cls: 'primary', keep: true, on: () => { st.P.glow = new Set(); run({ fault: '' }); chat.say('This is the printer after the repair: a healthy print.'); } });
+  else btns.unshift({ label: 'Show me the part on the virtual printer', keep: true, on: async () => { await enterSim(true); st.P.glow = new Set([g.part]); st.P.focusPart(g.part); } });
+  chat.buttons(m, btns);
+}
+
+// ---------------- yes / no questions (optional) ----------------
+async function askQuestions(r) {
+  r = r || await fmea({ ask: true }); if (r.error) { chat.say(esc(r.error)); return; }
+  if (r.type !== 'ask') { st.ranked = r.ranked || []; if (st.sim) { st.shown = new Set(); st.looks = {}; nextScenario(); } else showCards(r); return; }
+  const q = r.question, how = { measure: 'needs a multimeter or a measuring app', test: 'a quick test', feel: 'by hand, printer off' }[q.how];
+  const m = chat.say(`<b>${esc(q.text)}</b>` + (how ? `<div class="tiny mut">${how}</div>` : ''));
+  const ans = v => async () => { chat.me({ yes: 'Yes', no: 'No', dk: "I can't tell" }[v]); askQuestions(await fmea({ answer: { id: q.id, value: v } })); };
+  chat.buttons(m, [{ label: 'Yes', cls: 'primary', on: ans('yes') }, { label: 'No', on: ans('no') }, { label: "I can't tell", on: ans('dk') }]);
+}
+
+// ---------------- simulation mode ----------------
+async function enterSim(quiet) {
+  if (st.sim) return; st.sim = true; $('#app').classList.add('sim'); $('#simbtn').textContent = 'Close simulation'; $('#simbtn').classList.remove('primary');
+  if (!st.P) await initPrinter(); else st.P.resize();
+  if (quiet) return;
+  if (!st.askedConfig) askConfig(); else if (st.ranked.length && st.stage !== 'done') nextScenario();
+}
+function leaveSim() { st.sim = false; $('#app').classList.remove('sim'); $('#simbtn').textContent = 'Open simulation'; $('#simbtn').classList.add('primary'); if (st.stage === 'config') st.stage = 'describe'; }
+$('#simbtn').onclick = () => st.sim ? leaveSim() : enterSim();
+$('#closedrawer').onclick = () => $('#app').classList.add('closed'); $('#opendrawer').onclick = () => $('#app').classList.remove('closed');
+
+async function initPrinter() {
+  const { createPrinter } = await import('/app/printer3d.js');
+  let bannerT = null;
+  const P = st.P = createPrinter($('#view'), {
+    onBanner: (msg, bad, sticky) => { const b = $('#banner'); clearTimeout(bannerT); if (!msg) { b.style.display = 'none'; return; } b.textContent = msg; b.className = 'banner' + (bad ? '' : ' good'); b.style.display = 'block'; if (!sticky) bannerT = setTimeout(() => b.style.display = 'none', 3200); },
+    onFrame: hud, onPick: pid => { P.selected = pid; chat.say(`<b>${esc(st.NAMES[pid] || pid)}</b><div class="tiny mut">Selected on the virtual printer.</div>`); },
+    onHover: (pid, x, y) => { const t = $('#tip'); if (pid) { t.textContent = st.NAMES[pid] || pid; t.style.display = 'block'; t.style.left = (x + 14) + 'px'; t.style.top = (y + 12) + 'px'; } else t.style.display = 'none'; },
+  });
+  (await get('/api/parts') || []).forEach(p => st.NAMES[p.id] = p.name);
+  st.RANGES = await get('/api/settings') || {}; buildSettings();
+  const cad = await P.setCad(true); $('#cad').checked = cad.ok; $('#viewnote').textContent = cad.ok ? 'Official Voron 0.2r1 CAD · layer height drawn larger' : 'Simplified model (CAD not converted)';
+  P.run({ settings: st.settings });
+}
+function run(o) { st.lastRun = { ...o, settings: o.settings ?? st.settings }; return st.P.run(st.lastRun); }
+let frame = 0;
+function hud(S) { if (++frame % 6) return; const sim = S.sim || {};
+  $('#hud').innerHTML = `<b>${S.err ? '<span class="bad">Stopped</span>' : ({ home: 'Homing', heat: 'Heating', print: 'Printing', done: 'Finished', idle: 'Idle' }[S.phase] || S.phase)}</b>` +
+    (S.phase === 'print' || S.phase === 'done' ? ` · layer ${Math.max(1, S.layer + 1)} / ${S.layers}` : '') +
+    `<br>Hotend ${S.hot.toFixed(0)} °C · Bed ${S.bedT.toFixed(0)} °C<br>Hotend fan: ${S.fanOn && S.power ? '<span class="ok">on</span>' : (S.phase === 'home' || S.phase === 'idle' ? 'off' : '<span class="bad">not spinning</span>')}` +
+    (sim.belt_hz ? ` · Belts ${sim.belt_hz.a} / ${sim.belt_hz.b} Hz` : '');
+  const c = $('#chart'), g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height); if (!sim.hot) return;
+  const n = Math.max(sim.hot.length, 2), X = i => i / (n - 1) * c.width, Y = t => c.height - 8 - (Math.max(0, t) / 280) * (c.height - 16);
+  for (const [arr, col] of [[sim.hot, '#d9822b'], [sim.bed, '#3b82c4']]) { g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); arr.forEach((t, i) => i ? g.lineTo(X(i), Y(t)) : g.moveTo(X(i), Y(t))); g.stroke(); }
+  g.strokeStyle = '#9aa0a8'; g.beginPath(); g.moveTo(X(S.cursor), 0); g.lineTo(X(S.cursor), c.height); g.stroke();
+}
+// drawer controls
+$('#pause').onclick = () => { $('#pause').textContent = st.P.pause() ? 'Resume' : 'Pause'; };
+$('#replay').onclick = () => { $('#pause').textContent = 'Pause'; st.P.run(st.lastRun || { settings: st.settings }); };
+$('#spd').oninput = e => { st.P.opt.speed = +e.target.value; $('#spdv').textContent = e.target.value + 'x'; };
+$('#cad').onchange = async e => { const r = await st.P.setCad(e.target.checked); if (!r.ok) e.target.checked = false; };
+$('#panels').onchange = e => st.P.setPanels(e.target.checked); $('#xray').onchange = e => st.P.setXray(e.target.checked);
+$('#follow').onchange = e => st.P.opt.follow = e.target.checked; $('#resetview').onclick = () => st.P.resetView();
+
+// ---------------- settings: sidebar and chat ----------------
+function buildSettings() {
+  $('#settings').innerHTML = Object.entries(st.RANGES).map(([k, r]) => `<div class="set"><label for="s-${k}">${esc(LABEL(k))}</label><input type="number" step="any" id="s-${k}" data-k="${k}" placeholder="${r.design ?? ''}">
+    <div class="rng" id="r-${k}">${r.min} – ${r.max} ${esc(r.unit)} · design ${r.design ?? '–'}</div></div>`).join('');
+  syncSettings();
+}
+function syncSettings() { for (const k of Object.keys(st.RANGES)) { const el = $('#s-' + k); if (!el) continue; el.value = st.settings[k] ?? ''; el.classList.remove('err'); $('#r-' + k).classList.remove('err'); } }
+const rangeMsg = (k, v) => { const r = st.RANGES[k]; return `${LABEL(k)}: ${v} ${r.unit} is outside the allowed range. It should be between ${r.min} and ${r.max} ${r.unit}. Please check the value.`; };
+const listSettings = () => Object.entries(st.settings).map(([k, v]) => `${LABEL(k)} = ${v} ${st.RANGES[k]?.unit || ''}`).join('; ');
+$('#applyset').onclick = () => {
+  const next = {}, bad = [];
+  for (const k of Object.keys(st.RANGES)) { const el = $('#s-' + k), r = st.RANGES[k]; el.classList.remove('err'); $('#r-' + k).classList.remove('err'); if (el.value.trim() === '') continue;
+    const v = +el.value; if (isNaN(v) || v < r.min || v > r.max) { bad.push([k, el.value]); el.classList.add('err'); $('#r-' + k).classList.add('err'); } else next[k] = v; }
+  if (bad.length) { chat.say(bad.map(([k, v]) => esc(rangeMsg(k, v))).join('<br>')); return; }
+  st.settings = next; st.baselineDone = false; run({ fault: '' });
+  const m = chat.say(Object.keys(next).length ? `Settings applied to the virtual printer: ${esc(listSettings())}.` : 'The virtual printer uses the design values.');
+  if (st.stage === 'config') chat.buttons(m, [{ label: 'Continue', cls: 'primary', on: finishConfig }]);
+};
+$('#resetset').onclick = () => { st.settings = {}; st.baselineDone = false; syncSettings(); run({ fault: '' }); chat.say('All settings are back to the design values.'); };
+
+function askConfig() {
+  st.stage = 'config'; st.askedConfig = true;
+  const m = chat.say(fmt('The virtual printer is in the middle of the screen.\n**Do you want to set it up like your real machine?** Then it is easier for me to understand the fault.\n• Set the values in the **Settings** bar on the left, or\n• write them to me here, for example: "nozzle 240 C, print speed 150 mm/s, belt A 90 Hz".\nIf you do not know your settings, just continue.'));
+  chat.buttons(m, [{ label: 'Open the settings bar', keep: true, on: () => $('#app').classList.remove('closed') }, { label: "I don't know them — continue", cls: 'primary', on: finishConfig }]);
+}
+async function settingsText(t) {
+  if (/\b(don'?t know|do not know|not sure|no idea|skip|continue|default|none|no settings|nothing)\b/i.test(t) || /^(no|nope|n)\.?$/i.test(t.trim())) return finishConfig();
+  const done = chat.typing(); const r = await post('/api/twin/settings', { text: t, state: { settings: st.settings } }); done();
+  if (r.error) { chat.say(esc(r.error)); return; }
+  if (!r.actions.length && !r.rejected.length) { finishConfig(true); return describe(t); }     // not settings: it is the problem description
+  if (r.actions.length) { st.settings = r.state.settings || {}; st.baselineDone = false; syncSettings(); run({ fault: '' }); }
+  const m = chat.say(esc(r.reply) + (r.rejected.length ? '' : '<br>Anything else to set? If not, continue.'));
+  chat.buttons(m, [{ label: 'Continue', cls: 'primary', on: finishConfig }]);
+}
+function finishConfig(silent) {
+  if (st.stage !== 'config') return; st.stage = 'describe';
+  if (st.ranked.length) return nextScenario();
+  if (silent !== true) chat.say(fmt((Object.keys(st.settings).length ? `Good. The virtual printer now uses: ${listSettings()}.\n` : 'No problem, I use the design values.\n') + '**Now describe the problem on your machine**: what happens, when it happens, and any message on the screen.'));
+}
+
+// ---------------- scenario loop: simulate -> same? -> check the part -> repair ----------------
+const sees = m => `<div class="card">“${esc(m.says)}”` + (m.klipper && !m.says.includes(m.klipper) ? `<div class="tiny" style="margin-top:4px">Klipper message: <b>${esc(m.klipper)}</b></div>` : '') + (m.shows?.length ? `<div class="tiny mut" style="margin-top:4px">In the simulation: ${m.shows.map(esc).join(' · ')}</div>` : '') + '</div>';
+async function nextScenario() {
+  if (!st.P) await initPrinter();
+  // 1. do the user's settings alone already cause a problem?
+  if (!st.baselineDone && Object.keys(st.settings).length) { st.baselineDone = true;
+    const b = await post('/api/twin/match', { session: st.session, part: '', settings: st.settings });
+    if (b && b.visible) { st.P.glow = new Set(); run({ fault: '' }); st.stage = 'confirm';
+      const m = chat.say(`With your settings alone, without any broken part, the virtual printer already shows a problem:${sees(b)}Watch the print. <b>Is this the same as on your machine?</b>`);
+      chat.buttons(m, [{ label: 'Yes, the same', cls: 'primary', on: () => { chat.me('Yes, the same.'); settingsCulprit(); } }, { label: 'No, it is different', on: () => { chat.me('No, it is different.'); nextScenario(); } }]); return; } }
+  // 2. the most likely faulty part that was not shown yet. Several parts can give the same picture, so a picture the user has already judged is not asked again:
+  //    "the same" -> go straight to checking the next part; "different" -> skip the parts that only give that picture.
+  let g = null, sc = null, known = null;
+  for (const x of st.ranked) { if (st.shown.has(x.part)) continue;
+    const m0 = await post('/api/twin/match', { session: st.session, part: x.part, settings: st.settings });
+    const c = (m0 && m0.says) ? m0 : { severity: .6, seed: 1, says: x.mode, shows: [], visible: false };
+    const sig = c.visible ? c.says + '|' + (c.shows || []).join('|') : 'hidden:' + x.part; if (st.looks[sig] === 'different') continue;
+    g = x; sc = c; sc.sig = sig; known = st.looks[sig]; break; }
+  if (!g) { const m = chat.say('I have shown the scenarios that fit your description. Please describe the problem in more detail (what you see, hear, any message on the screen), or let me ask you some questions.');
+    chat.buttons(m, [{ label: 'Ask me questions', cls: 'primary', on: () => askQuestions() }]); st.stage = 'describe'; return; }
+  st.shown.add(g.part); st.cur = g;
+  st.P.glow = new Set(); st.P.selected = null; if (!known) st.P.resetView(); run({ fault: g.part, severity: sc.severity, seed: sc.seed });
+  if (known === 'same') { chat.say('The same picture can also come from another part.'); return checkPart(g); }
+  st.stage = 'confirm';
+  const m = chat.say(`${(st.nsc = (st.nsc || 0) + 1) === 1 ? 'I am now simulating the most likely scenario' : 'Here is another possible scenario'} on the virtual printer:${sees(sc)}` +
+    (sc.visible ? '' : `<div class="tiny mut">This fault is hard to see in a simulation. On the real printer you would notice: ${esc(g.mode)}.</div>`) + 'Watch the print in the middle. <b>Is this the same as what you see on your machine?</b>');
+  const same = w => () => { chat.me(w); st.looks[sc.sig] = 'same'; checkPart(g); };
+  chat.buttons(m, [{ label: 'Yes, the same', cls: 'primary', on: same('Yes, the same.') }, { label: 'Similar', on: same('Similar.') },
+    { label: 'No, it is different', on: () => { chat.me('No, it is different.'); st.looks[sc.sig] = 'different'; st.shown.delete(g.part); different(); } }]);
+}
+function checkPart(g) {
+  st.stage = 'check'; st.P.glow = new Set([g.part]); st.P.focusPart(g.part);
+  const m = chat.say(`Then the part most likely at fault is <b>${esc(g.name)}</b>. It is glowing on the virtual printer.<div class="card"><b>Likely failure:</b> ${esc(g.mode)}<div style="margin-top:4px"><b>Please check:</b> ${esc(g.check)}</div><div class="src">Source: ${esc(g.source)}</div></div><b>Is this part faulty?</b>`);
+  chat.buttons(m, [{ label: 'Yes, it is faulty', cls: 'primary', on: () => { chat.me(`Yes, the ${g.name} is faulty.`); confirmFault(g); } },
+    { label: 'No, this part is fine', on: async () => { chat.me(`No, the ${g.name} is fine.`); const r = await fmea({ exclude: g.part }); st.ranked = r.ranked || []; st.P.glow = new Set(); chat.say(`OK, the ${esc(g.name)} is ruled out.`); nextScenario(); } },
+    { label: 'Show me the part again', keep: true, on: () => { st.P.glow = new Set([g.part]); st.P.focusPart(g.part); } }]);
+}
+function different() {
+  st.stage = 'describe';
+  const m = chat.say(fmt('OK, that is not it.\n**Tell me what is different on your machine**, in a few more words. Or I can show the next possible scenario, or ask you some yes / no questions.'));
+  chat.buttons(m, [{ label: 'Show another scenario', cls: 'primary', on: () => nextScenario() }, { label: 'Ask me questions', on: () => askQuestions() }]);
+}
+function settingsCulprit() {
+  st.stage = 'done'; const slicer = ['nozzle_temp', 'bed_temp', 'print_speed', 'first_layer_speed', 'layer_height', 'line_width'];
+  const rows = Object.entries(st.settings).map(([k, v]) => `<li>${esc(LABEL(k))}: you have <b>${v}</b> ${esc(st.RANGES[k].unit)}, design value <b>${st.RANGES[k].design ?? '–'}</b> ${esc(st.RANGES[k].unit)} <span class="tiny mut">(${slicer.includes(k) ? 'slicer' : k.startsWith('belt') ? 'belt tension' : 'printer.cfg'})</span></li>`).join('');
+  const m = chat.say(`Then no part needs to be broken: <b>the settings themselves cause this</b>.<div class="card"><b>How to repair:</b> bring these values back towards the design values, one at a time, and print again:<ol>${rows}</ol></div>`);
+  chat.buttons(m, [{ label: 'Show the printer with the design values', cls: 'primary', keep: true, on: () => { run({ fault: '', settings: {} }); chat.say('This is the same print with the design values.'); } }, { label: 'New case', on: newCase }]);
+}
+welcome();
+if (new URLSearchParams(location.search).get('sim') === '1') enterSim();
+</script>
+</body></html>

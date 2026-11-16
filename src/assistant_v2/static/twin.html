@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Virtual Voron 0.2</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#10161d;--panel:#18212b;--line:#2a3643;--txt:#dfe6ee;--mut:#8a99a8;--acc:#e8a33d;--bad:#e5534b;--ok:#3fb950}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.4 system-ui,Segoe UI,sans-serif;overflow:hidden}
+#app{display:grid;grid-template-columns:300px 1fr 330px;height:100vh}
+@media (max-width:1100px){#app{grid-template-columns:200px 1fr 210px}aside{padding:8px;font-size:12px}}
+aside{background:var(--panel);overflow:auto;padding:14px;border-right:1px solid var(--line)}
+aside.right{border-right:0;border-left:1px solid var(--line)}
+h1{font-size:16px;margin:0 0 4px}h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:16px 0 6px}
+label{display:block;margin:6px 0 2px;color:var(--mut);font-size:12px}
+select,input[type=range],button,textarea{width:100%}select,textarea{background:#0f151b;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:6px}
+button{background:var(--acc);color:#1b1206;border:0;border-radius:6px;padding:8px;font-weight:600;cursor:pointer;margin-top:6px}
+button.sec{background:#2a3643;color:var(--txt)}
+.row{display:flex;gap:6px}.row>*{flex:1}
+.chk{display:flex;align-items:center;gap:6px;color:var(--txt);font-size:13px;margin:4px 0}.chk input{width:auto}
+#view{position:relative}#view canvas{display:block}
+#banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:#000c;border:1px solid var(--bad);color:#ffd7d4;padding:8px 14px;border-radius:8px;display:none;max-width:80%;text-align:center}
+#tip{position:absolute;pointer-events:none;background:#000d;padding:4px 8px;border-radius:5px;font-size:12px;display:none}
+#hud{position:absolute;left:12px;bottom:12px;background:#000a;padding:8px 10px;border-radius:8px;font-size:12px;line-height:1.5}
+#note{position:absolute;right:12px;bottom:12px;color:var(--mut);font-size:11px;max-width:330px;text-align:right}
+.kv{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:13px}.kv span:nth-child(odd){color:var(--mut)}
+.bad{color:var(--bad)}.ok{color:var(--ok)}.mut{color:var(--mut)}
+#chart{width:100%;height:110px;background:#0f151b;border:1px solid var(--line);border-radius:6px}
+#info ul{padding-left:18px;margin:4px 0}
+.tabs{display:flex;gap:4px;margin-bottom:8px}.tabs button{margin:0;padding:6px;background:#2a3643;color:var(--txt)}.tabs button.on{background:var(--acc);color:#1b1206}
+#chatlog{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}.msg{padding:8px;border-radius:8px;font-size:13px}.me{background:#24384d;align-self:flex-end;max-width:90%}
+.bot{background:#0f151b;border:1px solid var(--line)}.q{margin:8px 0 2px;font-weight:600}.pill{display:inline-block;width:auto;margin:3px 3px 0 0;padding:4px 8px;font-weight:400;font-size:12px;background:#2a3643;color:var(--txt)}
+.pill.on{background:var(--acc);color:#1b1206}.sus{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:4px}.sus button{width:auto;margin:0;padding:3px 8px;font-size:12px}
+.chips span{display:inline-block;background:#24384d;border-radius:10px;padding:2px 8px;margin:2px;font-size:11px}
+input.f{width:70px;background:#0f151b;color:var(--txt);border:1px solid var(--line);border-radius:4px;padding:3px}.says{background:#0f151b;border-left:3px solid var(--acc);padding:6px 8px;border-radius:4px;font-style:italic}
+</style>
+<script type="importmap">{"imports":{"three":"/vendor/three.module.min.js","three/addons/":"/vendor/addons/"}}</script>
+</head><body><div id="app">
+<aside>
+  <h1>Virtual Voron 0.2</h1><div class="mut" style="font-size:12px">Drag to rotate · scroll to zoom · right-drag to pan · click a part for its card</div>
+  <h2>Simulate a fault</h2>
+  <label>Faulty part</label><select id="fault"><option value="">Healthy printer</option></select>
+  <label>Severity: <b id="sevv">0.60</b></label><input id="sev" type="range" min="0.2" max="0.95" step="0.05" value="0.6">
+  <label>Run (random variation)</label><input id="seed" type="range" min="1" max="20" step="1" value="1">
+  <button id="run">Run the print</button>
+  <div class="row"><button class="sec" id="pause">Pause</button><button class="sec" id="reset">Reset view</button></div>
+  <label>Animation speed: <b id="spdv">5x</b></label><input id="spd" type="range" min="1" max="30" step="1" value="5">
+  <h2>Tell the virtual printer</h2>
+  <textarea id="cmd" rows="2" placeholder="e.g. belt A 70 Hz · nozzle 210 C · make the hotend fan fail · reset"></textarea>
+  <button id="cmdgo">Apply</button><div id="cmdreply" class="mut" style="font-size:12px;margin-top:4px"></div><div id="chips" class="chips"></div>
+  <h2>View</h2>
+  <label class="chk"><input type="checkbox" id="cad"> Official Voron CAD model</label><div id="cadmsg" class="mut" style="font-size:11px"></div>
+  <label class="chk"><input type="checkbox" id="showFault"> Show the faulty part (glowing yellow)</label>
+  <label class="chk"><input type="checkbox" id="panels" checked> Side panels</label>
+  <label class="chk"><input type="checkbox" id="xray"> X-ray (see through the frame)</label>
+  <label class="chk"><input type="checkbox" id="follow"> Camera follows the nozzle</label>
+  <h2>Hotend and bed temperature</h2><canvas id="chart" width="560" height="220"></canvas>
+  <div class="mut" style="font-size:11px">orange = hotend, blue = bed, grey line = now</div>
+</aside>
+<div id="view"><div id="banner"></div><div id="tip"></div><div id="hud"></div>
+  <div id="note">Simplified 3D geometry built from the documented sizes (BOM, config, manual). Not the official CAD. Layer height and some movements are drawn larger so they are visible.</div></div>
+<aside class="right">
+  <div class="tabs"><button data-t="chat" class="on">Assistant</button><button data-t="sim">Simulation</button><button data-t="part">Part</button></div>
+  <div id="tab-chat"><div id="chatlog"><div class="msg bot">Describe what your printer does, in your own words. I will name the parts to check, in order, and show each fault on the virtual printer.<div id="modeline" class="mut" style="font-size:11px;margin-top:4px"></div></div></div>
+    <textarea id="msg" rows="3" placeholder="e.g. my prints have layer shifts after the first layer"></textarea><div class="row"><button id="send">Send</button><button class="sec" id="newcase">New case</button></div></div>
+  <div id="tab-sim" hidden><h2>What the technician sees</h2><div id="says" class="says">Press "Run the print".</div><h2>Live values</h2><div class="kv" id="live"></div></div>
+  <div id="tab-part" hidden><h2>Selected part</h2><div id="info" class="mut">Click any part in the 3D view.</div></div>
+</aside></div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const $ = s => document.querySelector(s);
+// ---------------- scene ----------------
+const view = $('#view'); const renderer = new THREE.WebGLRenderer({antialias:true}); renderer.setPixelRatio(Math.min(2, devicePixelRatio));
+view.appendChild(renderer.domElement); const scene = new THREE.Scene(); scene.background = new THREE.Color(0x10161d);
+const camera = new THREE.PerspectiveCamera(40, 1, 1, 5000); const controls = new OrbitControls(camera, renderer.domElement);
+function resetView(){const far = Math.max(1, 1.25 / Math.max(.6, camera.aspect)); camera.position.set(430 * far, 330 * far, 560 * far); controls.target.set(0, 110, 0); controls.update();}
+resetView(); controls.enableDamping = true;
+const hemi = new THREE.HemisphereLight(0xdfe8ff, 0x202830, 1.2); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(300, 600, 400); scene.add(sun);
+const grid = new THREE.GridHelper(800, 32, 0x2a3643, 0x1c252f); grid.position.y = -82; scene.add(grid);
+function resize(){const r = view.getBoundingClientRect(); renderer.setSize(r.width, r.height); camera.aspect = r.width / r.height; camera.updateProjectionMatrix();}
+addEventListener('resize', resize); resize(); resetView();
+
+// ---------------- materials and helpers ----------------
+const M = (c, o = {}) => new THREE.MeshStandardMaterial({color: c, roughness: .6, metalness: .2, ...o});
+const mat = {alu: M(0x9aa3ad, {metalness: .6, roughness: .4}), black: M(0x22262b), steel: M(0xc8ced6, {metalness: .8, roughness: .3}),
+  printed: M(0x2b2f36), accent: M(0xe8a33d), red: M(0xb3261e), green: M(0x1e7a3b), blue: M(0x2f6fb5), copper: M(0xb87333, {metalness: .7}),
+  pei: M(0xc9a54a, {roughness: .8}), acrylic: new THREE.MeshPhysicalMaterial({color: 0x9fd3ff, transparent: true, opacity: .12, roughness: .1, depthWrite: false})};
+const parts = {};   // part id -> list of meshes
+function tag(mesh, part){ if(!part) return mesh; mesh.userData.part = part; (parts[part] ||= []).push(mesh); mesh.userData.baseMat = mesh.material; return mesh; }
+function box(w, h, d, m, x, y, z, part, parent = scene){const g = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m.clone ? m.clone() : m); g.position.set(x, y, z); parent.add(g); return tag(g, part);}
+function cyl(r, h, m, x, y, z, part, parent = scene, axis = 'y', seg = 20){const g = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), m.clone()); g.position.set(x, y, z);
+  if(axis === 'x') g.rotation.z = Math.PI / 2; if(axis === 'z') g.rotation.x = Math.PI / 2; parent.add(g); return tag(g, part);}
+function seg(mesh, a, b, t){const d = b.clone().sub(a); const L = d.length(); mesh.scale.set(t, L || .001, t); mesh.position.copy(a).add(b).multiplyScalar(.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());}
+const unitBox = new THREE.BoxGeometry(1, 1, 1);
+// printer coordinates: bed x,y in 0..120 mm -> world x = X-60, z = 60-Y. Nozzle tip fixed at world y = TIP.
+const TIP = 170, FRAME_H = 262, HALF = 115;
+const W = (X, Y) => [X - 60, 60 - Y];
+
+// ---------------- frame (MakerBeam XL 15x15) and panels ----------------
+const frameMeshes = [];
+for(const sx of [-1, 1]) for(const sz of [-1, 1]) frameMeshes.push(box(15, FRAME_H, 15, mat.black, sx * (HALF - 7.5), FRAME_H / 2, sz * (HALF - 7.5)));
+for(const y of [7.5, FRAME_H - 7.5]) for(const sz of [-1, 1]) { frameMeshes.push(box(2 * HALF - 30, 15, 15, mat.black, 0, y, sz * (HALF - 7.5))); frameMeshes.push(box(15, 15, 2 * HALF - 30, mat.black, sz * (HALF - 7.5), y, 0)); }
+box(2 * HALF, 3, 2 * HALF, M(0x2b3138), 0, 0, 0);                         // deck panel
+box(2 * HALF, 3, 2 * HALF, M(0x2b3138), 0, -80, 0);                       // bottom panel
+for(const sx of [-1, 1]) for(const sz of [-1, 1]) box(12, 80, 12, mat.printed, sx * (HALF - 6), -40, sz * (HALF - 6));   // skirts (simplified)
+const panelMeshes = [];
+for(const sx of [-1, 1]) { const p = new THREE.Mesh(new THREE.PlaneGeometry(2 * HALF, FRAME_H), mat.acrylic); p.rotation.y = Math.PI / 2; p.position.set(sx * HALF, FRAME_H / 2, 0); scene.add(p); panelMeshes.push(p); }
+{ const p = new THREE.Mesh(new THREE.PlaneGeometry(2 * HALF, FRAME_H), mat.acrylic); p.position.set(0, FRAME_H / 2, HALF); scene.add(p); panelMeshes.push(p);
+  const t = new THREE.Mesh(new THREE.PlaneGeometry(2 * HALF, 2 * HALF), mat.acrylic); t.rotation.x = -Math.PI / 2; t.position.set(0, FRAME_H, 0); scene.add(t); panelMeshes.push(t); }
+
+// ---------------- Z axis: rails, lead screw, motor, endstop ----------------
+const ZR_Z = -100;
+for(const sx of [-1, 1]) box(7, 150, 8, mat.steel, sx * 35, 95, ZR_Z, 'z_rails');
+const screw = cyl(4, 260, mat.steel, 0, 100, ZR_Z, 'z_motor_leadscrew'); box(42, 48, 42, mat.black, 0, -45, ZR_Z, 'z_motor_leadscrew');
+const zEnd = box(12, 6, 20, M(0xeeeeee), 52, 32, ZR_Z, 'z_endstop'); box(2, 8, 2, M(0xd04040), 52, 37, ZR_Z + 8, 'z_endstop');
+
+// ---------------- bed group (moves in Z) ----------------
+const bed = new THREE.Group(); scene.add(bed);
+const plate = box(120, 6.35, 120, mat.alu, 0, -3.2, 0, 'bed_plate_carrier', bed);  // MIC6 1/4" plate
+box(120, .6, 120, mat.pei, 0, .3, 0, 'bed_plate_carrier', bed);                     // PEI sheet
+const pad = box(100, 1.5, 100, M(0x7a1f1a), 0, -7.2, 0, 'bed_heater', bed);         // 60 W silicone heater
+box(6, 2, 4, M(0x444444), 30, -8.5, 30, 'bed_thermistor', bed); box(8, 3, 5, M(0x6a6a6a), -30, -8.5, 30, 'bed_thermal_fuse', bed);
+const carrier = new THREE.Group(); bed.add(carrier);
+for(const [bx, by] of [[60, 5], [5, 115], [115, 115]]) { const [x, z] = W(bx, by); cyl(4, 20, M(0xd8c22a), x, -18, z, 'bed_plate_carrier', carrier); }   // die springs at [bed_screws]
+box(110, 6, 12, mat.printed, 0, -30, -50, 'bed_plate_carrier', carrier); box(12, 6, 70, mat.printed, -50, -30, -20, 'bed_plate_carrier', carrier);
+box(12, 6, 70, mat.printed, 50, -30, -20, 'bed_plate_carrier', carrier); box(90, 20, 14, mat.printed, 0, -30, ZR_Z + 6, 'bed_plate_carrier', carrier);
+const printGroup = new THREE.Group(); bed.add(printGroup);   // the printed object sits on the bed
+
+// ---------------- XY gantry: Y rails, X rail, motors, pulleys, belts ----------------
+const GY = TIP + 52;   // height of the XY plane
+for(const sx of [-1, 1]) box(7, 8, 150, mat.steel, sx * 100, GY, 0, 'y_linear_rails');
+const gantry = new THREE.Group(); scene.add(gantry);
+box(150, 8, 7, mat.steel, 0, GY, 0, 'x_linear_rail', gantry);
+for(const sx of [-1, 1]) { box(22, 18, 30, mat.printed, sx * 100, GY, 0, 'y_linear_rails', gantry); cyl(5, 10, mat.steel, sx * 100, GY + 14, 8, 'xy_pulleys_idlers', gantry); }
+const motorA = box(35, 35, 35, mat.black, -95, GY + 10, -105, 'xy_motors_drivers'), motorB = box(35, 35, 35, mat.black, 95, GY + 10, -105, 'xy_motors_drivers');
+const pulA = cyl(6, 8, mat.steel, -95, GY + 31, -105, 'xy_pulleys_idlers'), pulB = cyl(6, 8, mat.steel, 95, GY + 37, -105, 'xy_pulleys_idlers');
+for(const sx of [-1, 1]) cyl(5, 10, mat.steel, sx * 100, GY + 34, 100, 'xy_pulleys_idlers');
+const beltA = [], beltB = [];
+for(let i = 0; i < 7; i++){ beltA.push(tag(new THREE.Mesh(unitBox, M(0x2f6fb5)), 'xy_belts')); beltB.push(tag(new THREE.Mesh(unitBox, M(0xc8762b)), 'xy_belts')); scene.add(beltA[i], beltB[i]); }
+
+// ---------------- toolhead ----------------
+const head = new THREE.Group(); scene.add(head);
+box(40, 46, 30, mat.printed, 0, 50, 0, 'toolhead', head);
+const ext = box(32, 28, 26, M(0x3a3f47), 0, 86, -2, 'extruder_gears_guidler', head);
+const pancake = cyl(18, 14, mat.black, 0, 107, -2, 'extruder_motor', head);
+const heatsink = cyl(11, 22, mat.alu, 0, 24, 0, 'heatbreak_ptfe', head); cyl(2, 10, mat.steel, 0, 10, 0, 'heatbreak_ptfe', head);
+const block = box(20, 10, 16, M(0x8f949a, {metalness: .7}), 0, 4, 0, 'hotend_heater', head);
+cyl(3, 18, M(0x8a2a20), 0, 4, 5, 'hotend_heater', head, 'x'); cyl(1.4, 10, M(0xdddddd), -5, 3, -6, 'hotend_thermistor', head, 'x');
+const nozzle = new THREE.Mesh(new THREE.ConeGeometry(3.5, 6, 16), mat.copper.clone()); nozzle.rotation.x = Math.PI; nozzle.position.set(0, -4, 0); head.add(nozzle); tag(nozzle, 'nozzle');
+const hfan = new THREE.Group(); hfan.position.set(0, 26, 17); head.add(hfan); box(30, 30, 8, mat.black, 0, 0, 0, 'hotend_fan', hfan);
+const hblades = new THREE.Group(); hfan.add(hblades); for(let i = 0; i < 7; i++){ const b = box(3, 12, 1, M(0x555a60), 0, 6, 4.5, 'hotend_fan', hblades); b.geometry.translate(0, 0, 0); b.position.set(Math.sin(i * .9) * 6, Math.cos(i * .9) * 6, 4.5); b.rotation.z = -i * .9; }
+const pfans = []; for(const sx of [-1, 1]) { const g = new THREE.Group(); g.position.set(sx * 26, 30, 0); head.add(g); box(10, 30, 30, M(0x2f343b), 0, 0, 0, 'part_cooling_fan', g);
+  const w = new THREE.Group(); g.add(w); for(let i = 0; i < 6; i++){ const b = box(1, 10, 2.5, M(0x666b72), 5.5, 0, 0, 'part_cooling_fan', w); b.position.set(5.5, Math.sin(i * 1.05) * 6, Math.cos(i * 1.05) * 6); } pfans.push(w);
+  box(6, 6, 6, M(0x2f343b), sx * 14, 2, 0, 'part_cooling_fan', head); }
+
+// ---------------- umbilical, filament, spool, runout sensor ----------------
+const umb = tag(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(0, 1, 0)]), 8, 3, 6), M(0x1d1f22)), 'umbilical_wiring'); scene.add(umb);
+const fil = tag(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(0, 1, 0)]), 8, 1.2, 6), M(0xd9d9d9, {transparent: true, opacity: .9})), 'filament_material'); scene.add(fil);
+const spool = new THREE.Group(); spool.position.set(0, 175, -170); scene.add(spool);
+{ const s = new THREE.Mesh(new THREE.TorusGeometry(45, 18, 12, 40), M(0xe0e0e0)); s.rotation.y = Math.PI / 2; spool.add(s); tag(s, 'filament_material');
+  const h = cyl(28, 40, M(0x333333), 0, 0, 0, 'filament_material', spool, 'x'); }
+const runout = box(16, 14, 14, mat.printed, 0, FRAME_H + 10, -100, 'filament_runout_sensor');
+
+// ---------------- electronics bay ----------------
+box(99, 30, 82, mat.alu, -55, -60, 15, 'power_supply'); const psuLed = box(3, 3, 3, M(0x30ff60, {emissive: 0x30ff60}), -8, -50, 56, 'power_supply');
+box(85, 3, 56, mat.green, 45, -62, 40, 'controller_board'); box(10, 6, 8, M(0xcccccc), 30, -58, 55, 'controller_board');
+box(85, 3, 56, M(0x1f6b33), 45, -62, -40, 'host_computer'); const piLed = box(3, 3, 3, M(0xff3030, {emissive: 0xff3030}), 80, -59, -20, 'host_computer');
+box(10, 8, 8, M(0x6b4bc4), 60, -56, -30, 'firmware_config_macros');      // SD card = config and macros
+box(30, 24, 10, M(0x111111), -80, -40, -HALF + 5, 'mains_power_input'); cyl(4, 120, M(0x111111), -80, -40, -HALF - 60, 'mains_power_input', scene, 'z');
+for(const [c, dx] of [[0xd02020, 0], [0x202020, 4]]) { const w = tag(new THREE.Mesh(unitBox, M(c)), 'dc_power_wiring'); scene.add(w); seg(w, new THREE.Vector3(-5, -55, 30 + dx), new THREE.Vector3(30, -60, 60 + dx), 2.5); }
+const slicerChip = box(14, 10, 2, M(0x2f6fb5), 80, -40, HALF - 2, 'slicer_settings');   // stands for the sliced job file
+
+// ---------------- state ----------------
+const S = {X: 60, Y: 60, Z: 0, sim: null, path: [], i: 0, t: 0, layer: 0, running: false, paused: false, phase: 'idle', fanOn: true, partFan: false,
+  hot: 22, bedT: 22, err: null, beltSag: {a: 0, b: 0}, deposit: [], shiftAcc: [0, 0], power: true, cursor: 0};
+const LAYERS = 18, LH_VIS = 0.7, LW_VIS = 1.1, CUBE = 30;
+function buildPath(){       // a 30 mm hollow cube: 2 perimeters + diagonal infill per layer
+  const p = []; const c = 60, h = CUBE / 2;
+  for(let L = 0; L < LAYERS; L++){
+    for(const inset of [0, 1.6]) { const a = h - inset; const pts = [[c - a, c - a], [c + a, c - a], [c + a, c + a], [c - a, c + a], [c - a, c - a]];
+      p.push({L, travel: true, to: pts[0]}); for(let k = 1; k < pts.length; k++) p.push({L, to: pts[k]}); }
+    const a = h - 3.2; const dir = L % 2;
+    for(let k = -a; k <= a; k += 4){ const s = dir ? [[c + k, c - a], [c + k, c + a]] : [[c - a, c + k], [c + a, c + k]];
+      const [s0, s1] = (Math.round((k + a) / 4) % 2) ? [s[1], s[0]] : s; p.push({L, travel: true, to: s0}); p.push({L, to: s1}); }
+  }
+  return p;
+}
+function clearPrint(){ while(printGroup.children.length) printGroup.remove(printGroup.children[0]); }
+const depMat = M(0xe8a33d, {roughness: .5}); const depMatThin = M(0xf0c070, {roughness: .5}); const depMatSquish = M(0xb57a22, {roughness: .4});
+function gapAt(X, Y){ const g = S.sim?.z_grid; if(!g || g.length < 9) return 0;          // first-layer gap error from the 3x3 grid
+  const fx = Math.min(1, Math.max(0, (X - 10) / 100)) * 2, fy = Math.min(1, Math.max(0, (Y - 10) / 100)) * 2;
+  const ix = Math.min(1, Math.floor(fx)), iy = Math.min(1, Math.floor(fy)), tx = fx - ix, ty = fy - iy, G = (i, j) => g[i * 3 + j];
+  return (G(ix, iy) * (1 - tx) + G(ix + 1, iy) * tx) * (1 - ty) + (G(ix, iy + 1) * (1 - tx) + G(ix + 1, iy + 1) * tx) * ty; }
+function deposit(a, b, L){
+  const sim = S.sim || {}; let flow;
+  if(sim.flow_stop_layer) flow = L < sim.flow_stop_layer ? (sim.flow_start ?? 1) : 0;   // a jam that builds up over time
+  else flow = L < 1 ? (sim.flow_start ?? 1) : (sim.flow_late ?? 1);
+  if(flow <= 0.03 || Math.random() > Math.min(1, flow + .15)) return;
+  let w = LW_VIS * Math.min(1.4, Math.max(.35, flow)), h = LH_VIS, m = flow > 1.05 ? depMatSquish : flow < .9 ? depMatThin : depMat;
+  if(L === 0){ const e = gapAt((a[0] + b[0]) / 2, (a[1] + b[1]) / 2);                    // + too high, - squished
+    if(e > .12 && Math.random() < .5) return; w *= Math.min(1.8, Math.max(.4, 1 - e * 5)); h *= Math.min(1.3, Math.max(.5, 1 + e * 3)); m = e < -.06 ? depMatSquish : e > .06 ? depMatThin : m; }
+  const mesh = new THREE.Mesh(unitBox, m); const [ax, az] = W(...a), [bx, bz] = W(...b); const y = (L + .5) * LH_VIS + .6;
+  const len = Math.hypot(bx - ax, bz - az); if(len < .05) return;
+  mesh.scale.set(len + w * .5, h, w); mesh.position.set((ax + bx) / 2, y, (az + bz) / 2); mesh.rotation.y = -Math.atan2(bz - az, bx - ax); printGroup.add(mesh);
+}
+// ---------------- geometry updates every frame ----------------
+const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
+function updateMachine(dt){
+  const [hx, hz] = W(S.X, S.Y);
+  let jx = 0, jz = 0; if(S.sim?.ringing && S.phase === 'print') { jx = (Math.random() - .5) * 1.2; jz = (Math.random() - .5) * 1.2; }
+  head.position.set(hx + jx, TIP + 4, hz + jz); gantry.position.set(0, 0, hz);
+  const tilt = S.sim?.bed_tilt || [0, 0]; const drop = (S.phase === 'print' || S.phase === 'done') ? (S.layer + 1) * LH_VIS : S.Z;
+  bed.position.y = TIP - 3.6 - drop - (S.zDrop || 0);
+  bed.rotation.z = -tilt[0] / 120 * 10; bed.rotation.x = tilt[1] / 120 * 10;   // tilt drawn 10x larger
+  // belts (simplified CoreXY loops; a slack belt sags)
+  const sagA = S.beltSag.a, sagB = S.beltSag.b;
+  const loop = (arr, y, side, sag) => { const pts = [v3(hx + side * 20, y, hz), v3(side * 100, y, hz), v3(side * 100, y - sag, -105 + (hz + 105) / 2), v3(side * 95, y, -105), v3(-side * 95, y, -105), v3(-side * 100, y, 100), v3(-side * 100, y - sag, hz + (100 - hz) / 2), v3(hx - side * 20, y, hz)];
+    for(let k = 0; k < arr.length; k++) seg(arr[k], pts[k], pts[k + 1], 2.5); };
+  loop(beltA, GY + 31, -1, sagA); loop(beltB, GY + 37, 1, sagB);
+  // umbilical cable and filament path
+  const top = v3(hx, TIP + 115, hz);
+  umb.geometry.dispose(); umb.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([v3(hx, TIP + 70, hz - 10), v3(hx * .6, FRAME_H + 30, hz * .5 - 40), v3(0, FRAME_H - 10, -HALF + 10)]), 24, 3, 6);
+  fil.geometry.dispose(); fil.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([v3(0, 175, -170 + 45), v3(0, FRAME_H + 10, -110), v3(hx * .5, FRAME_H + 45, hz * .5 - 30), top]), 30, 1.1, 6);
+  // fans and heat colours
+  if(S.power && S.fanOn) hblades.rotation.z += dt * 40; if(S.power && S.partFan) pfans.forEach(w => w.rotation.x += dt * 50);
+  const hc = Math.min(1, Math.max(0, (S.hot - 22) / 230)); block.material.color.setRGB(.56 + .44 * hc, .58 - .3 * hc, .6 - .45 * hc); block.material.emissive.setRGB(.5 * hc * hc, .08 * hc, 0);
+  const bc = Math.min(1, Math.max(0, (S.bedT - 22) / 80)); pad.material.emissive.setRGB(.45 * bc, .05 * bc, 0);
+  const creep = S.sim?.creep && S.layer >= 3 ? Math.min(1, (S.layer - 3) / 3) : 0; heatsink.material.color.setRGB(.6 + .4 * creep, .64 - .2 * creep, .68 - .5 * creep);
+  psuLed.material.emissive.setHex(S.power ? 0x30ff60 : 0x000000); piLed.material.emissive.setHex(S.power ? 0xff3030 : 0x000000);
+  hemi.intensity = S.power ? 1.2 : .25; sun.intensity = S.power ? 1.6 : .3;
+  if(S.sim?.umbilical_flicker && S.phase === 'print' && Math.random() < .03) flash('Toolhead cable: the thermistor/fan signal drops for a moment', 900);
+}
+// highlight the faulty part (pulsing red) when the checkbox is on
+let pulse = 0;
+function highlight(dt){
+  pulse += dt * 4; const on = $('#showFault').checked && S.sim?.fault;
+  for(const [pid, list] of Object.entries(activeParts())) for(const m of list){ if(!m.material?.emissive) continue;
+    if(on && pid === S.sim.fault){ const k = .55 + .45 * Math.sin(pulse); m.material.emissive.setRGB(k, k * .85, 0); m.userData.hl = true; }   // glowing yellow (Voron parts are already red)
+    else if(m.userData.hl){ m.material.emissive.setRGB(0, 0, 0); m.userData.hl = false; } }
+  if(selected) for(const m of activeParts()[selected] || []) if(!(on && selected === S.sim?.fault)) m.material.emissive?.setRGB(.15, .35, .6);
+}
+// ---------------- the print sequence ----------------
+let bannerT = 0;
+function flash(msg, ms = 3000, bad = true){ const b = $('#banner'); b.textContent = msg; b.style.display = 'block'; b.style.borderColor = bad ? '#e5534b' : '#3fb950'; bannerT = ms / 1000; }
+function stopWith(msg){ S.running = false; S.err = msg; flash(msg, 1e9); }
+async function runPrint(){
+  const fault = $('#fault').value, sev = $('#sev').value, seed = $('#seed').value; TW.fault = fault || null; TW.severity = +sev;
+  const st = encodeURIComponent(JSON.stringify(TW.settings || {}));
+  let sim; try { sim = await (await fetch(`/api/twin?fault=${fault}&severity=${sev}&seed=${seed}&settings=${st}`)).json(); } catch(e){ flash('The assistant server is not running.'); return; }
+  S.sim = sim; S.path = buildPath(); S.i = 0; S.t = 0; S.layer = -1; S.resumed = false; bed.position.x = 0; S.Z = 0; S.zDrop = 0; S.err = null; S.power = true; S.shiftAcc = [0, 0]; S.cursor = 0;
+  S.hot = 22; S.bedT = 22; S.fanOn = false; S.partFan = false; clearPrint(); $('#banner').style.display = 'none';
+  const ta = sim.belt_hz?.a ?? 110, tb = sim.belt_hz?.b ?? 110; S.beltSag = {a: Math.max(0, (1 - (ta / 110) ** 2)) * 25, b: Math.max(0, (1 - (tb / 110) ** 2)) * 25};
+  $('#says').textContent = '"' + sim.says + '"'; S.running = true; S.paused = false; S.phase = 'home'; S.phaseT = 0; drawChart();
+}
+const SPEED = () => +$('#spd').value;
+function step(dt){
+  if(!S.running || S.paused) return; const sim = S.sim; dt *= SPEED(); S.phaseT += dt;
+  if(S.phase === 'home'){            // homing: head to the back-right corner (X/Y max), bed down to Z max
+    S.X += (120 - S.X) * Math.min(1, dt * 1.5); S.Y += (120 - S.Y) * Math.min(1, dt * 1.5);
+    const zt = sim.z_home === 'Stops too early' ? 50 : sim.z_home === 'Z does not move' ? 0 : 120; S.Z += (zt - S.Z) * Math.min(1, dt * 1.2);
+    if(sim.z_home === 'Bed crashes / does not stop'){ S.zDrop = Math.min(25, S.zDrop + dt * 8); bed.position.x = (Math.random() - .5) * 1.5; }
+    if(!sim.homed && S.phaseT > .5) return stopWith('Klipper: ' + (sim.errors[0] || 'cannot connect to the printer'));
+    if(S.phaseT > 3){ if(sim.z_home !== 'Homes correctly') return stopWith(`Z homing: ${sim.z_home.toLowerCase()}` + (sim.errors.length ? ` — "${sim.errors[sim.errors.length - 1]}"` : ''));
+      S.phase = 'heat'; S.phaseT = 0; S.fanOn = sim.hotend_fan; }
+    return;
+  }
+  if(S.phase === 'heat'){            // heating: follow the simulated temperature curves
+    const k = Math.min(sim.hot.length - 1, Math.floor(S.phaseT * 20)); S.cursor = k; S.hot = Math.max(22, sim.hot[k] ?? 22); S.bedT = Math.max(22, sim.bed[k] ?? 22);
+    S.Z += (0 - S.Z) * Math.min(1, dt); S.X += (60 - S.X) * Math.min(1, dt); S.Y += (45 - S.Y) * Math.min(1, dt);
+    if(sim.off_phase === 'heat' && S.phaseT > 4){ if(sim.power_lost){ S.power = false; return stopWith('The whole printer switched off while heating' + (sim.restarted ? ' (it came back on, the print was lost)' : '')); }
+      return stopWith('Klipper: ' + (sim.errors[0] || 'shutdown')); }
+    if(S.phaseT > 5){ S.phase = 'print'; S.phaseT = 0; S.Z = 0; } return;
+  }
+  // printing
+  S.cursor = Math.min(sim.hot.length - 1, S.cursor + dt * 2); S.hot = Math.max(22, sim.hot[Math.floor(S.cursor)] ?? S.hot); S.bedT = Math.max(22, sim.bed[Math.floor(S.cursor)] ?? S.bedT);
+  let budget = 60 * dt;              // mm of travel this frame (60 mm/s drawn)
+  while(budget > 0 && S.i < S.path.length){
+    const mv = S.path[S.i];
+    if(mv.L !== S.layer){            // new layer: lower the bed one layer, check for stops and shifts
+      S.layer = mv.L; S.Z = S.layer * .2; S.partFan = sim.part_fan && S.layer >= 3;
+      if(sim.stop_layer && S.layer + 1 >= sim.stop_layer){ if(sim.power_lost){ S.power = false; return stopWith('The whole printer switched off' + (sim.restarted ? ' — it came back on by itself, the print is lost' : '')); }
+        return stopWith('Klipper: ' + (sim.errors[0] || 'shutdown') + ` (layer ${S.layer + 1})`); }
+      if(sim.runout_pause && S.layer === 6 && !S.resumed){ S.paused = true; S.resumed = true; flash('Print paused: "Filament runout detected" — but there is filament. Press Pause/Resume to continue.', 1e9); return; }
+      const sh = sim.shift; if(sh && S.layer >= sh.from_layer && (S.layer - sh.from_layer) % sh.every === 0){ S.shiftAcc[0] += sh.dx * 2; S.shiftAcc[1] += sh.dy * 2;
+        flash(`Layer shift at layer ${S.layer + 1}` + (sim.noise !== 'No' ? ` (${sim.noise.toLowerCase()})` : ''), 1800); }
+      if(sim.flow_stop_layer && S.layer === sim.flow_stop_layer) flash(sim.e_motor !== 'Turns normally' ? `Extrusion stops — extruder: ${sim.e_motor.toLowerCase()}` : 'Extrusion stops', 2500);
+    }
+    const tgt = mv.to, skew = (sim.skew_deg || 0) * Math.PI / 180;
+    const real = [tgt[0] + S.shiftAcc[0] + (tgt[1] - 60) * Math.tan(skew), tgt[1] + S.shiftAcc[1]];   // where the nozzle really is
+    const dx = real[0] - S.X, dy = real[1] - S.Y, d = Math.hypot(dx, dy);
+    if(d <= budget){ const from = [S.X, S.Y]; S.X = real[0]; S.Y = real[1]; budget -= d; if(!mv.travel) deposit(from, real, S.layer); S.i++; }
+    else { const from = [S.X, S.Y]; S.X += dx / d * budget; S.Y += dy / d * budget; if(!mv.travel) deposit(from, [S.X, S.Y], S.layer); budget = 0; }
+  }
+  if(S.i >= S.path.length){ S.running = false; S.phase = 'done'; flash(sim.fault ? 'Print finished. Compare the result with your printer.' : 'Print finished. A healthy printer.', 4000, !sim.fault ? false : true); }
+}
+// ---------------- panels: live values, chart, part cards ----------------
+function live(){
+  const sim = S.sim || {}, m = sim.measurements || {};
+  const rows = [['Phase', S.err ? '<span class="bad">stopped</span>' : S.phase], ['Layer', S.phase === 'print' || S.phase === 'done' ? `${Math.max(1, S.layer + 1)} / ${LAYERS}` : '–'],
+    ['Hotend', `${S.hot.toFixed(0)} °C / 250`], ['Bed', `${S.bedT.toFixed(0)} °C / ${S.layer < 1 ? 100 : 90}`],
+    ['Hotend fan', S.fanOn && S.power ? '<span class="ok">spinning</span>' : (S.phase === 'idle' ? 'off' : '<span class="bad">not spinning</span>')],
+    ['Part fan', S.partFan && S.power ? '<span class="ok">spinning</span>' : (S.layer >= 3 && S.phase === 'print' ? '<span class="bad">not spinning</span>' : 'off (layers 1–3)')],
+    ['Belt A / B', sim.belt_hz ? `${sim.belt_hz.a} / ${sim.belt_hz.b} Hz (110)` : '–'], ['Extruder', sim.e_motor || '–'],
+    ['24 V supply', m.psu_v ? `${m.psu_v} V` : '–'], ['First layer', sim.first_layer || '–'], ['Z homing', sim.z_home || '–']];
+  $('#live').innerHTML = rows.map(([k, v]) => `<span>${k}</span><span>${v}</span>`).join('');
+  $('#hud').innerHTML = `X ${S.X.toFixed(1)}  Y ${S.Y.toFixed(1)}  Z ${S.Z.toFixed(2)} mm` + (S.sim?.fault && $('#showFault').checked ? `<br><span class="bad">fault: ${S.sim.fault}${S.sim.mode ? ' – ' + S.sim.mode : ''} (severity ${S.sim.severity})</span>` : '');
+}
+function drawChart(){
+  const c = $('#chart'), g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height); const sim = S.sim; if(!sim) return;
+  const n = Math.max(sim.hot.length, 2), X = i => i / (n - 1) * c.width, Y = t => c.height - 10 - (Math.max(0, t) / 280) * (c.height - 20);
+  for(const [arr, col] of [[sim.hot, '#e8a33d'], [sim.bed, '#4a90d9']]){ g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); arr.forEach((t, i) => i ? g.lineTo(X(i), Y(t)) : g.moveTo(X(i), Y(t))); g.stroke(); }
+  g.strokeStyle = '#555'; g.setLineDash([4, 4]); g.beginPath(); g.moveTo(0, Y(250)); g.lineTo(c.width, Y(250)); g.stroke(); g.setLineDash([]);
+  g.strokeStyle = '#aaa'; g.beginPath(); g.moveTo(X(S.cursor), 0); g.lineTo(X(S.cursor), c.height); g.stroke();
+}
+let PARTS = []; let selected = null;
+fetch('/api/parts').then(r => r.json()).then(list => { PARTS = list; const sel = $('#fault');
+  for(const p of list){ const o = document.createElement('option'); o.value = p.id; o.textContent = p.name; sel.appendChild(o); } }).catch(() => flash('Start the assistant server first (see SETUP step 18).'));
+function showInfo(pid){
+  for(const m of activeParts()[selected] || []) m.material.emissive?.setRGB(0, 0, 0);
+  selected = pid; const p = PARTS.find(x => x.id === pid); if(!p){ $('#info').textContent = pid; return; }
+  $('#info').innerHTML = `<b>${p.name}</b> <span class="mut">(${p.subsystem})</span><div>${p.function}</div>` +
+    (p.failure_modes.length ? `<div class="mut" style="margin-top:6px">How it fails</div><ul>${p.failure_modes.map(x => `<li>${x}</li>`).join('')}</ul>` : '') +
+    (p.checks.length ? `<div class="mut">How to check</div><ul>${p.checks.map(x => `<li>${x}</li>`).join('')}</ul>` : '') +
+    `<div class="mut" style="font-size:11px">Source: ${p.source}</div><button class="sec" id="simThis">Simulate a fault in this part</button>`;
+  $('#simThis').onclick = () => { $('#fault').value = pid; runPrint(); }; tab('part');
+}
+// picking parts with the mouse
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(); let downAt = null;
+function pick(ev){ const r = renderer.domElement.getBoundingClientRect(); mouse.set((ev.clientX - r.left) / r.width * 2 - 1, -(ev.clientY - r.top) / r.height * 2 + 1);
+  ray.setFromCamera(mouse, camera); const hit = ray.intersectObjects(Object.values(activeParts()).flat().filter(m => m.visible), false)[0]; return hit?.object.userData.part; }
+renderer.domElement.addEventListener('pointerdown', e => downAt = [e.clientX, e.clientY]);
+renderer.domElement.addEventListener('pointerup', e => { if(downAt && Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) < 4){ const p = pick(e); if(p) showInfo(p); } });
+renderer.domElement.addEventListener('pointermove', e => { const p = pick(e), t = $('#tip'); if(p){ const n = PARTS.find(x => x.id === p)?.name || p; t.textContent = n; t.style.display = 'block';
+  const r = view.getBoundingClientRect(); t.style.left = (e.clientX - r.left + 14) + 'px'; t.style.top = (e.clientY - r.top + 10) + 'px'; } else t.style.display = 'none'; });
+// ---------------- controls ----------------
+$('#sev').oninput = e => $('#sevv').textContent = (+e.target.value).toFixed(2); $('#spd').oninput = e => $('#spdv').textContent = e.target.value + 'x';
+$('#run').onclick = runPrint; $('#reset').onclick = resetView;
+$('#pause').onclick = () => { S.paused = !S.paused; $('#pause').textContent = S.paused ? 'Resume' : 'Pause'; if(!S.paused && !S.err) $('#banner').style.display = 'none'; };
+$('#panels').onchange = e => panelMeshes.forEach(p => p.visible = e.target.checked);
+$('#xray').onchange = e => frameMeshes.forEach(m => { m.material.transparent = e.target.checked; m.material.opacity = e.target.checked ? .15 : 1; });
+// ---------------- tabs ----------------
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => tab(b.dataset.t));
+function tab(t){ document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x.dataset.t === t)); for(const n of ['chat', 'sim', 'part']) $('#tab-' + n).hidden = n !== t; }
+const esc = x => String(x ?? '').replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c])).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+const partName = id => PARTS.find(x => x.id === id)?.name || id;
+function focusPart(pid){ const list = activeParts()[pid]; if(!list?.length) return; const b = new THREE.Box3(); list.forEach(m => b.expandByObject(m));
+  const c = b.getCenter(new THREE.Vector3()); controls.target.copy(c); const dir = camera.position.clone().sub(c).normalize(); const size = b.getSize(new THREE.Vector3()).length(); camera.position.copy(c.clone().add(dir.multiplyScalar(Math.max(160, size * 1.4)))); controls.update(); }
+// ---------------- step 2: prompt control of the twin ----------------
+const TW = {fault: null, severity: .6, settings: {}};
+function chips(){ $('#chips').innerHTML = Object.entries(TW.settings).map(([k, v]) => `<span>${k.replace(/_/g, ' ')} = ${v}</span>`).join('') + (TW.fault ? `<span style="background:#5a2320">fault: ${TW.fault.replace(/_/g, ' ')}</span>` : ''); }
+async function command(text){
+  $('#cmdreply').textContent = '...';
+  let r; try { r = await (await fetch('/api/twin/command', {method: 'POST', body: JSON.stringify({text, state: TW})})).json(); } catch(e){ $('#cmdreply').textContent = 'Server not running.'; return; }
+  if(r.error){ $('#cmdreply').textContent = r.error; return; }
+  $('#cmdreply').textContent = r.reply + (r.by ? ` (${r.by})` : '');
+  if(r.actions?.length){ Object.assign(TW, r.state); $('#fault').value = TW.fault || ''; $('#sev').value = TW.severity; $('#sevv').textContent = (+TW.severity).toFixed(2); chips(); runPrint(); }
+}
+$('#cmdgo').onclick = () => { const t = $('#cmd').value.trim(); if(t) command(t); };
+$('#cmd').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('#cmdgo').click(); } });
+// ---------------- step 3: the assistant, connected to the twin ----------------
+const NORMAL = new Set(["No change", "Yes, always", "Steady at target", "Turns normally", "Smooth in both", "Homes correctly", "Good everywhere", "No",
+  "Normal amount but bad quality", "Not a shift problem", "Yes, but no link I can see", "Yes, the LED is on", "No runout message; it pauses another way", "ABS, normal spool, nothing unusual", "Looks fine", "Yes, it spins", "Neither, both look normal", "nothing", "none"]);
+const SLOT_TEXT = {problem_kind: 'Kind of problem', stop_type: 'When it stops', restart: 'After it goes off', cord_wiggle: 'Wiggling the power cord', when: 'When it happens',
+  temp_behaviour: 'Hotend temperature', fan_state: 'Hotend fan', flow_state: 'Plastic out of the nozzle', motor_behaviour: 'Extruder motor', shift_axis: 'Layer shift direction',
+  noise: 'Sound when moving', move_by_hand: 'Moving the head by hand', z_home: 'Z homing', first_layer: 'First layer', mcu_state: 'Connection', wiggle: 'Moving the toolhead cable',
+  runout_check: 'Pause message', psu_led: 'PSU LED', error_message: 'Error message'};
+let SESSION = null, pendingQ = [];
+function say(html, me = false){ const d = document.createElement('div'); d.className = 'msg ' + (me ? 'me' : 'bot'); d.innerHTML = html; $('#chatlog').appendChild(d); d.scrollIntoView({block: 'end'}); return d; }
+async function turn(body){
+  let r; try { r = await (await fetch('/api/turn', {method: 'POST', body: JSON.stringify({session: SESSION, ...body})})).json(); } catch(e){ say('The assistant server is not running.'); return; }
+  if(r.error){ say(esc(r.error)); return; } SESSION = r.session; render(r.reply);
+}
+function suspects(hyps){ const top = (hyps || []).filter(h => h.p >= .05).slice(0, 3); if(!top.length) return '';
+  return '<div class="mut" style="margin-top:8px">Suspects now — compare them on the virtual printer:</div>' + top.map(h =>
+    `<div class="sus"><span>${esc(h.name)} <span class="mut">${Math.round(h.p * 100)}%</span></span><button class="sec" data-cmp="${h.id}">Show</button></div>`).join(''); }
+function wire(d){ d.querySelectorAll('[data-cmp]').forEach(b => b.onclick = () => compare(b.dataset.cmp)); }
+function render(rep){
+  if(rep.type === 'questions'){
+    pendingQ = rep.questions; const d = say(`${esc(rep.intro || '')}<div id="qform"></div>${suspects(rep.hyps)}`); const f = d.querySelector('#qform'); f.removeAttribute('id');
+    for(const q of rep.questions){
+      const box = document.createElement('div'); box.dataset.q = q.id; box.innerHTML = `<div class="q">${esc(q.text)}</div>` + (q.how ? `<div class="mut" style="font-size:11px">${esc(q.how)}</div>` : '');
+      if(q.kind === 'choice') for(const o of q.options){ const b = document.createElement('button'); b.className = 'pill'; b.textContent = o; b.onclick = () => { box.querySelectorAll('.pill').forEach(x => x.classList.remove('on')); b.classList.add('on'); box.dataset.v = o; }; box.appendChild(b); }
+      else if(q.kind === 'fields') for(const fl of q.fields){ const l = document.createElement('div'); l.innerHTML = `${esc(fl.label)} <input class="f" data-k="${fl.key}"> ${esc(fl.unit)}`; box.appendChild(l); }
+      else { const t = document.createElement('input'); t.className = 'f'; t.style.width = '100%'; t.placeholder = q.hint || ''; t.dataset.t = '1'; box.appendChild(t); }
+      const dk = document.createElement('button'); dk.className = 'pill'; dk.textContent = "I can't tell"; dk.onclick = () => { box.dataset.v = '__dk'; box.querySelectorAll('.pill').forEach(x => x.classList.remove('on')); dk.classList.add('on'); }; box.appendChild(dk);
+      f.appendChild(box);
+    }
+    const go = document.createElement('button'); go.textContent = 'Send answers'; f.appendChild(go);
+    go.onclick = () => { const form = {facts: {}, measurements: {}, dont_know: []}; const shown = [];
+      f.querySelectorAll('[data-q]').forEach(box => { const q = pendingQ.find(x => x.id === box.dataset.q); if(!q) return;
+        if(box.dataset.v === '__dk'){ form.dont_know.push(q.id); shown.push("I can't tell"); return; }
+        if(q.kind === 'choice'){ if(box.dataset.v){ form.facts[q.slot] = box.dataset.v; shown.push(box.dataset.v); } else form.dont_know.push(q.id); }
+        else if(q.kind === 'fields'){ box.querySelectorAll('input[data-k]').forEach(i => { if(i.value.trim()){ form.measurements[i.dataset.k] = isNaN(+i.value) ? i.value.trim() : +i.value; shown.push(`${i.dataset.k}=${i.value}`); } }); }
+        else { const v = box.querySelector('input').value.trim(); if(v){ form.facts[q.slot] = v; shown.push(v); } else form.dont_know.push(q.id); } });
+      go.disabled = true; say(esc(shown.join(' · ') || '(no answers)'), true); turn({form}); };
+    wire(d);
+  } else if(rep.type === 'diagnosis'){
+    const g = rep.diagnosis, p = PARTS.find(x => x.id === g.cause) || {checks: []};
+    const d = say(`<b>Most likely: ${esc(g.cause_name)}</b> <span class="mut">${Math.round((g.p || 0) * 100)}% · confidence ${esc(g.confidence)}</span>
+      <div style="margin-top:4px">${esc(g.chain)}</div>${g.evidence?.length ? `<div class="mut" style="margin-top:4px">Because: ${g.evidence.map(esc).join('; ')}</div>` : ''}
+      <div style="margin-top:6px">The virtual printer now shows this fault; the part glows yellow. <b>Please check this part:</b></div>
+      <ul>${(p.checks.length ? p.checks : ['inspect the glowing part']).map(c => `<li>${esc(c)}</li>`).join('')}</ul>
+      <div class="row"><button data-ok>It was this part</button><button class="sec" data-fine>This part is fine</button></div>
+      ${g.alternatives?.length ? '<div class="mut" style="margin-top:6px">Other possibilities: ' + g.alternatives.map(a => `${esc(a.name)} (${Math.round(a.p * 100)}%)`).join(', ') + '</div>' : ''}`);
+    $('#showFault').checked = true; compare(g.cause, true); focusPart(g.cause);
+    d.querySelector('[data-ok]').onclick = async () => { say('It was this part.', true);
+      fetch('/api/feedback', {method: 'POST', body: JSON.stringify({session: SESSION, verdict: 'correct', real_cause: g.cause})});
+      say(`Good, the diagnosis is complete: <b>${esc(g.cause_name)}</b>. Fix or replace it using the checks above and the assembly manual. ` +
+          `<button class="sec" data-after>Show the printer after the repair</button>`).querySelector('[data-after]').onclick = () => { TW.settings = {}; chips(); $('#fault').value = ''; $('#showFault').checked = false; runPrint(); }; };
+    d.querySelector('[data-fine]').onclick = () => { say(`I checked the ${esc(g.cause_name)}, it is fine.`, true); turn({form: {facts: {}, measurements: {}, dont_know: [], exclude: [g.cause]}}); };
+  } else say(esc(rep.text || rep.intro || JSON.stringify(rep)));
+}
+// show a suspected fault on the twin and list what it would look like, so the user can tick what matches their printer
+async function compare(pid, silent = false){
+  $('#fault').value = pid; $('#sev').value = .6; $('#sevv').textContent = '0.60'; await runPrint(); if(silent) return;
+  const sim = S.sim, ans = Object.entries(sim.answers || {}).filter(([k, v]) => SLOT_TEXT[k] && !NORMAL.has(v));
+  const d = say(`This is how <b>${esc(partName(pid))}</b> would behave (now running on the virtual printer). Does your printer show the same?` +
+    `<div class="says" style="margin:6px 0">"${esc(sim.says)}"</div>` + (ans.length ? ans.map(([k, v]) => `<label class="chk"><input type="checkbox" data-s="${k}" data-v="${esc(v)}"> ${esc(SLOT_TEXT[k])}: ${esc(v)}</label>`).join('') : '<div class="mut">No clear visible symptom for this fault.</div>') +
+    (ans.length ? '<button data-send>Send what matches my printer</button>' : ''));
+  d.querySelector('[data-send]')?.addEventListener('click', e => { const form = {facts: {}, measurements: {}, dont_know: []}; const shown = [];
+    d.querySelectorAll('input[data-s]:checked').forEach(i => { form.facts[i.dataset.s] = i.dataset.v; shown.push(i.dataset.v); });
+    if(!shown.length){ say('Nothing matches.', true); return; } e.target.disabled = true; say('Matches my printer: ' + esc(shown.join(' · ')), true); turn({form}); });
+}
+// ---------------- the FMEA-graph assistant (symptom graph; yes/no questions) ----------------
+let FSES = null;
+async function fturn(body){
+  let r; try { r = await (await fetch('/api/fmea', {method: 'POST', body: JSON.stringify({session: FSES, ...body})})).json(); } catch(e){ say('The assistant server is not running.'); return; }
+  if(r.error){ say(esc(r.error)); return; } FSES = r.session;
+  if(body.refine && lastCards){ lastCards.remove(); lastCards = null; }       // replace the instant answer by the refined one
+  frender(r);
+  if(r.type === 'diagnose' && r.refine && !body.refine){                      // instant answer shown; now let the language model read it too
+    const note = document.createElement('div'); note.className = 'mut'; note.style.fontSize = '11px'; note.textContent = 'Reading your description with the language model to refine the order (up to a minute) ...';
+    lastCards?.appendChild(note); fturn({refine: true});
+  }
+}
+let lastCards = null;
+function fsuspects(top){ return '<div class="mut" style="margin-top:8px">Most likely now — press Show to see it on the virtual printer:</div>' +
+  top.filter(h => h.p >= .04).slice(0, 3).map(h => `<div class="sus"><span>${esc(h.name)} <span class="mut">${Math.round(h.p * 100)}%</span></span><button class="sec" data-cmp="${h.id}">Show</button></div>`).join(''); }
+function frender(r){
+  if(r.type === 'notice'){ say(esc(r.text)); return; }
+  if(r.type === 'ask'){
+    const q = r.question, how = {measure: 'needs a multimeter or a measuring app', test: 'a quick test', feel: 'by hand, printer off'}[q.how];
+    const d = say(`${r.asked === 0 && r.seen.length ? '<div class="mut">I understood: ' + r.seen.map(esc).join(' · ') + '</div>' : ''}<div class="q">${esc(q.text)}</div>` +
+      (how ? `<div class="mut" style="font-size:11px">${how}</div>` : '') +
+      `<div class="row"><button data-a="yes">Yes</button><button data-a="no">No</button><button class="sec" data-a="dk">I can't tell</button></div>` + fsuspects(r.top));
+    d.querySelectorAll('[data-a]').forEach(b => b.onclick = () => { d.querySelectorAll('[data-a]').forEach(x => x.disabled = true);
+      say({yes: 'Yes', no: 'No', dk: "I can't tell"}[b.dataset.a], true); fturn({answer: {id: q.id, value: b.dataset.a}}); });
+    wire(d);
+  } else {
+    const R = r.ranked || [r.diagnosis];
+    const card = (g, i) => `<div style="border:1px solid var(--line);border-radius:8px;padding:6px;margin-top:6px">
+      <b>${i + 1}. ${esc(g.name)}</b> <span class="mut">${Math.round(g.p * 100)}%</span><div>Likely failure: ${esc(g.mode)}</div>` +
+      (g.because.length ? `<div class="mut" style="font-size:12px">Because: ${g.because.map(esc).join('; ')}</div>` : '') +
+      `<div style="margin-top:4px"><b>Check:</b> ${esc(g.check)}</div><div class="mut" style="font-size:11px">Source: ${esc(g.source)}</div>` +
+      `<div class="row"><button data-ok="${g.part}">This was it</button><button class="sec" data-fine="${g.part}">Checked, it is fine</button><button class="sec" data-cmp="${g.part}">Show</button></div></div>`;
+    const sim = (r.similar || [])[0];
+    const d = say(`<div>Check these parts in this order:${r.refined ? ' <span class="mut" style="font-size:11px">(refined by the language model)</span>' : ''}</div>` +
+      (sim ? `<div class="mut" style="font-size:12px;margin-top:4px">Similar confirmed case (${Math.round(sim.sim * 100)}% alike): "${esc(sim.text.slice(0, 110))}${sim.text.length > 110 ? '…' : ''}" → ${esc(sim.part)}</div>` : '') +
+      `${R.map(card).join('')}` +
+      `<button class="sec" data-ask style="margin-top:6px">Not sure? Answer a few yes/no questions to narrow it down</button>`);
+    lastCards = d; const g = R[0]; $('#showFault').checked = true; compare(g.part, true); focusPart(g.part); wire(d);
+    d.querySelectorAll('[data-ok]').forEach(b => b.onclick = () => { const n = R.find(x => x.part === b.dataset.ok);
+      d.querySelectorAll('button').forEach(x => x.disabled = true); lastCards = null;
+      fetch('/api/fmea', {method: 'POST', body: JSON.stringify({session: FSES, confirm: n.part})}).catch(() => {});   // remembered for next time
+      say('This was it.', true); say(`Diagnosis complete: <b>${esc(n.name)}</b> — ${esc(n.mode)}. I will remember this case. ` +
+      `<button class="sec" data-after>Show the printer after the repair</button>`).querySelector('[data-after]').onclick = () => { TW.settings = {}; chips(); $('#fault').value = ''; $('#showFault').checked = false; runPrint(); }; });
+    d.querySelectorAll('[data-fine]').forEach(b => b.onclick = () => { b.disabled = true; const n = R.find(x => x.part === b.dataset.fine);
+      say(`I checked the ${esc(n.name)}, it is fine.`, true); lastCards = null; fturn({exclude: n.part}); });
+    d.querySelector('[data-ask]').onclick = () => { say('Ask me questions.', true); fturn({ask: true}); };
+  }
+}
+$('#send').onclick = () => { const t = $('#msg').value.trim(); if(!t) return; $('#msg').value = ''; say(esc(t), true); tab('chat'); fturn({message: t}); };
+$('#msg').addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); $('#send').click(); } });
+fetch('/api/info').then(x => x.json()).then(i => { const m = $('#modeline'); if(m) m.textContent = 'Mode: ' + i.mode; }).catch(() => {});
+$('#newcase').onclick = () => { SESSION = null; FSES = null; lastCards = null; $('#chatlog').innerHTML = ''; say('New case. Describe what your printer does.'); };
+window.twin = {S, TW, runPrint, showInfo, parts, command, turn, compare, setCad: (on) => setCad(on)};
+// ---------------- official CAD (converted with tools/cad/convert_step.py) ----------------
+// Each solid of the STEP assembly is mapped to one of the 31 parts by its name and the names of the assemblies above it.
+const CAD_RULES = [
+ [/Filament Runout|Runout Sensor/i, 'filament_runout_sensor'], [/PTFE Tube Insert/i, 'heatbreak_ptfe'],
+ [/Filament Spool|Spool Holder|\/Spool\b|Filament Guide Path|\/Filament\b|PTFE Tube|Bowden/i, 'filament_material'],
+ [/Revo[^/]*\/[^/]*Nozzle|\/Nozzle(?! LED)/i, 'nozzle'], [/Revo Voron Mount|Hotend Mounts/i, 'toolhead'], [/Revo/i, 'hotend_heater'],
+ [/36mm Round Stepper/i, 'extruder_motor'], [/BMG|Drive Gear|Idler Gear|Guidler|50 Tooth Gear|Extruder|Extriuder/i, 'extruder_gears_guidler'],
+ [/Blower/i, 'part_cooling_fan'], [/Electronics[^]*Fan/i, 'controller_board'], [/Axial Fan/i, 'hotend_fan'],
+ [/Mini Stealthburner|Nozzle LEDs|ADXL|X Carriage/i, 'toolhead'], [/Drag Chain|Strain Relief/i, 'umbilical_wiring'],
+ [/A Belt|B Belt|\/Belts/i, 'xy_belts'], [/Pulley|Idler|Bearing Stacks|F623|Shuttle|XY Joint/i, 'xy_pulleys_idlers'],
+ [/A Drive|B Drive|AB Drives|Nema14/i, 'xy_motors_drivers'],
+ [/Z Endstop|Omron|Microswitch/i, 'z_endstop'], [/Integrated Leadscrew|Z Motor|TR8x8|T8 Nut|Leadscrew/i, 'z_motor_leadscrew'],
+ [/X Axis[^]*(MGN7|Linear Rail)/i, 'x_linear_rail'], [/Y Axis[^]*(MGN7|Linear Rail)|Y Rail Stop/i, 'y_linear_rails'], [/Z Axis[^]*(MGN7|Linear Rail)|Z Rail Stop/i, 'z_rails'],
+ [/Silicone Bed Heater/i, 'bed_heater'], [/MIC6|Build Plate|Flex Plate|Magnetic Sheet|Bed Assembly|Die Spring|Rear Bed Mount|Stealth Bed|Thumb Nut/i, 'bed_plate_carrier'],
+ [/LRS-150|PSU/i, 'power_supply'], [/Mains Inlet/i, 'mains_power_input'], [/SKR Pico|BTT/i, 'controller_board'], [/Raspberry|RPi|Pi 4/i, 'host_computer'],
+];
+const CAD_PANEL = /Side Panels|Door Assembly|Extrusion Tophat\/Panels|Tophat Top Panel|Tophat Side Panel/i, CAD_HIDE = /\/Banana|\/Tools\//i, CAD_FRAME = /Extrusions|\/1515/i;
+const CAD_MOVE = [['head', /X Carriage|Mini Stealthburner|Revo|Extruder|BMG|Hotend Mounts|Nozzle LEDs|ADXL|36mm Round Stepper/i], ['gantry', /X Axis|XY Joint/i], ['bed', /Bed Assembly/i]];
+const cadParts = {}; let CAD = null, cadOn = false;
+function activeParts(){ if(!cadOn) return parts; const out = {...cadParts};
+  for(const [pid, list] of Object.entries(parts)) if(!out[pid]) out[pid] = list;      // parts the CAD does not model (thermistors, fuse, wiring, software) keep their marker
+  return out; }
+const nm = o => (o.name || '').replace(/_/g, ' ');     // three.js turns spaces into _ and drops . / : in names
+const pathOf = o => { const n = []; for(let x = o; x && x !== CAD?.root; x = x.parent) if(x.name) n.unshift(nm(x)); return '/' + n.join('/'); };
+async function loadCad(){
+  $('#cadmsg').textContent = 'Loading the official CAD ...';
+  let gltf; try { gltf = await new GLTFLoader().loadAsync('/cad/voron02r1.glb'); }
+  catch(e){ $('#cadmsg').textContent = 'Not converted yet: run tools\\cad\\convert_step.py (see SETUP step 19).'; $('#cad').checked = false; return null; }
+  const root = gltf.scene; CAD = {root, groups: {}, panel: [], frame: []}; scene.add(root);
+  let n = 0, mapped = 0;
+  root.traverse(o => { if(!o.isMesh) return; n++; o.material = o.material.clone(); const p = pathOf(o);
+    const rule = CAD_RULES.find(([rx]) => rx.test(p)); if(rule){ o.userData.part = rule[1]; (cadParts[rule[1]] ||= []).push(o); mapped++; }
+    if(CAD_PANEL.test(p)){ o.material.transparent = true; o.material.opacity = .18; o.material.depthWrite = false; CAD.panel.push(o); }
+    if(CAD_FRAME.test(p)) CAD.frame.push(o);
+    if(CAD_HIDE.test(p)) o.visible = false; });           // size-reference bananas and assembly jigs are not part of the printer
+  // moving groups: the highest node whose name matches (head before gantry, so the toolhead is not moved twice)
+  const taken = new Set();
+  for(const [g, rx] of CAD_MOVE){ CAD.groups[g] = [];
+    root.traverse(o => { if(o === root || !rx.test(nm(o))) return; for(let x = o.parent; x; x = x.parent) if(taken.has(x)) return;
+      if(CAD.groups[g].some(a => { let y = o.parent; while(y){ if(y === a) return true; y = y.parent; } return false; })) return;
+      CAD.groups[g].push(o); taken.add(o); }); }
+  // orientation and placement: up = the axis from the feet to the top; front = the door; deck panel top at y = 0, bed centred
+  const bb = o => new THREE.Box3().setFromObject(o);
+  const find = rx => { const l = []; root.traverse(o => { if(rx.test(nm(o))) l.push(o); }); return l; };
+  const boxOf = list => list.reduce((b, o) => b.union(bb(o)), new THREE.Box3());
+  root.updateMatrixWorld(true);
+  const size = boxOf([root]).getSize(new THREE.Vector3()); if(Math.max(size.x, size.y, size.z) < 5) root.scale.setScalar(1000);   // metres -> mm
+  root.updateMatrixWorld(true);
+  const feet = find(/Feet|Rubber Foot/i), top = find(/Tophat Top Panel|Top Panel/i);
+  if(feet.length && top.length){ const d = boxOf(top).getCenter(new THREE.Vector3()).sub(boxOf(feet).getCenter(new THREE.Vector3()));
+    const ax = ['x', 'y', 'z'].reduce((a, b) => Math.abs(d[b]) > Math.abs(d[a]) ? b : a, 'y');
+    if(ax === 'z') root.rotation.x = d.z > 0 ? -Math.PI / 2 : Math.PI / 2; else if(ax === 'x') root.rotation.z = d.x > 0 ? Math.PI / 2 : -Math.PI / 2; else if(d.y < 0) root.rotation.x = Math.PI; }
+  root.updateMatrixWorld(true);
+  const door = find(/Door Assembly|Door Panel/i), all = boxOf([root]).getCenter(new THREE.Vector3());
+  if(door.length && boxOf(door).getCenter(new THREE.Vector3()).z < all.z) root.rotation.y += Math.PI;    // front must face +z
+  root.updateMatrixWorld(true);
+  const plates = find(/MIC6/i).length ? find(/MIC6/i) : find(/Build Plate/i), deck = find(/Deck Panel/i);
+  const c = boxOf(plates.length ? plates : CAD.groups.bed).getCenter(new THREE.Vector3()); const deckTop = deck.length ? boxOf(deck).max.y : boxOf([root]).min.y + 80;
+  root.position.set(-c.x, -deckTop, -c.z); root.updateMatrixWorld(true);
+  // reference pose of the moving groups (world positions) and where the nozzle and bed are in the CAD
+  const hot = find(/^Revo Voron$/i), headB = boxOf(hot.length ? hot : CAD.groups.head);       // the nozzle tip = bottom of the hotend
+  const plate = boxOf(find(/Build Plate|Flex Plate|MIC6/i).length ? find(/Build Plate|Flex Plate|MIC6/i) : CAD.groups.bed);
+  const nz = headB.getCenter(new THREE.Vector3());
+  CAD.ref = {X0: nz.x + 60, Y0: 60 - nz.z, gap0: headB.min.y - plate.max.y, bedTop0: plate.max.y};
+  for(const g of Object.values(CAD.groups)) for(const o of g) o.userData.w0 = o.getWorldPosition(new THREE.Vector3());
+  // the printed object sits on the CAD build plate
+  CAD.printHolder = new THREE.Group(); scene.add(CAD.printHolder);
+  $('#cadmsg').textContent = `${n} solids, ${mapped} linked to the 31 parts. Belts and fans do not move in the CAD view.`;
+  return CAD;
+}
+function moveGroup(list, d){ for(const o of list){ const w = o.userData.w0.clone().add(d); o.position.copy(o.parent.worldToLocal(w)); } }
+function updateCad(){
+  if(!cadOn || !CAD?.ref) return; const r = CAD.ref;
+  const dx = S.X - r.X0, dz = -(S.Y - r.Y0); const drop = (S.phase === 'print' || S.phase === 'done') ? (S.layer + 1) * LH_VIS : S.Z;
+  moveGroup(CAD.groups.head, new THREE.Vector3(dx, 0, dz)); moveGroup(CAD.groups.gantry, new THREE.Vector3(0, 0, dz));
+  const dy = r.gap0 - drop - (S.zDrop || 0); moveGroup(CAD.groups.bed, new THREE.Vector3(0, dy, 0));
+  CAD.printHolder.position.set(0, r.bedTop0 + dy - .6, 0);           // printed layers follow the CAD bed
+}
+const simpleObjs = scene.children.filter(o => o !== hemi && o !== sun && o !== grid);
+async function setCad(on){
+  if(on && !CAD && !(await loadCad())) return;
+  cadOn = on; CAD.root.visible = on;
+  if(on) CAD.printHolder.add(printGroup); else bed.add(printGroup);       // move the print first, so it is not hidden
+  const keep = new Set(Object.entries(parts).filter(([pid]) => !cadParts[pid]).flatMap(([, l]) => l));
+  for(const o of simpleObjs) o.traverse(m => { if(m.isMesh) m.visible = !on || keep.has(m); });
+  if(!on) panelMeshes.forEach(p => p.visible = $('#panels').checked);
+  for(const list of Object.values(parts)) for(const m of list) m.material.emissive?.setRGB(0, 0, 0);
+}
+$('#cad').onchange = e => setCad(e.target.checked);
+$('#panels').addEventListener('change', e => CAD?.panel.forEach(m => m.visible = e.target.checked));
+$('#xray').addEventListener('change', e => CAD?.frame.forEach(m => { m.material.transparent = e.target.checked; m.material.opacity = e.target.checked ? .15 : 1; }));
+// ---------------- loop ----------------
+const clock = new THREE.Clock();
+function loop(){ const dt = Math.min(.05, clock.getDelta()); step(dt); updateMachine(dt); updateCad(); highlight(dt); live();
+  if(S.running) drawChart(); if(bannerT > 0 && (bannerT -= dt) <= 0 && !S.err) $('#banner').style.display = 'none';
+  if($('#follow').checked){ controls.target.lerp(head.position, .1); }
+  controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); }
+loop();
+</script></body></html>

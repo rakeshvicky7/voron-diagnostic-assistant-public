@@ -1,0 +1,2 @@
+set,id,truth,mode,named,top1,top3,questions,ended,failure,asked,opener
+practice,P01,hotend_fan,weak hotend fan (still spinning) -> heat creep; poster confirmed: replacing the hotend fan solved it,heatbreak_ptfe,False,False,6,diagnosis,reading,which_temp error hot_temp hot_behaviour fan_v hot_swing,"During prints the filament suddenly stops feeding, sometimes after 5 minutes, sometimes after 5 hours. The filament end comes out swollen, like it melted and cooled inside the hotend. The hotend temperature looks normal."

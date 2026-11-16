@@ -1,0 +1,1121 @@
+{
+ "hotend_heater": {
+  "id": "hotend_heater",
+  "name": "Hotend heater cartridge",
+  "subsystem": "Hotend",
+  "class": "heater",
+  "function": "Heats the hotend block so filament melts; controlled by PID from the hotend thermistor reading.",
+  "parameters": [
+   {
+    "key": "[extruder] heater_pin",
+    "value": "gpio23",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:152"
+   },
+   {
+    "key": "[extruder] control",
+    "value": "pid",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:157"
+   },
+   {
+    "key": "[extruder] pid_Kp",
+    "value": "28.182",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:158"
+   },
+   {
+    "key": "[extruder] pid_Ki",
+    "value": "1.978",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:159"
+   },
+   {
+    "key": "[extruder] pid_Kd",
+    "value": "100.397",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:160"
+   },
+   {
+    "key": "[extruder] min_temp",
+    "value": "0",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:161"
+   },
+   {
+    "key": "[extruder] max_temp",
+    "value": "270",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:162"
+   }
+  ],
+  "connections": [
+   {
+    "role": "heater_pin",
+    "board_pin": "gpio23",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:152"
+   }
+  ],
+  "failure_modes": [
+   {
+    "mode": "no or weak heating (open circuit, loose cartridge, failed output)",
+    "symptom": "slow or no heat-up, 'not heating at expected rate' error, cold prints",
+    "check": "watch temperature graph during heat-up; measure resistance; check cartridge clamped"
+   },
+   {
+    "mode": "control or limit setting wrong (PID, max_temp)",
+    "symptom": "temperature oscillates or printer shuts down at high temperature",
+    "check": "compare PID/max_temp with stock config; re-run PID_CALIBRATE"
+   }
+  ],
+  "related": [
+   "hotend_heater controlled_by hotend_thermistor",
+   "hotend_heater wired_through umbilical_wiring"
+  ],
+  "source": "Assembly manual (toolhead/hotend section); config [extruder]"
+ },
+ "hotend_thermistor": {
+  "id": "hotend_thermistor",
+  "name": "Hotend thermistor",
+  "subsystem": "Hotend",
+  "class": "sensor",
+  "function": "Measures hotend temperature for the heater control loop and the safety limits.",
+  "parameters": [
+   {
+    "key": "[extruder] sensor_pin",
+    "value": "gpio27",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:156"
+   },
+   {
+    "key": "[extruder] min_temp",
+    "value": "0",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:161"
+   },
+   {
+    "key": "[extruder] max_temp",
+    "value": "270",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:162"
+   }
+  ],
+  "connections": [
+   {
+    "role": "sensor_pin",
+    "board_pin": "gpio27",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:156"
+   }
+  ],
+  "failure_modes": [
+   {
+    "mode": "open or shorted sensor / wiring",
+    "symptom": "'ADC out of range' or absurd reading, shutdown",
+    "check": "check connector and wiring; measure resistance at room temperature"
+   },
+   {
+    "mode": "wrong sensor configuration (type, pullup, trigger threshold)",
+    "symptom": "reading offset from real value or false/no trigger",
+    "check": "compare sensor_type/pullup/threshold with hardware and docs"
+   },
+   {
+    "mode": "intermittent contact or loose mount",
+    "symptom": "spikes, drops or drifting reference between runs",
+    "check": "wiggle test while watching readings; check mount rigidity"
+   }
+  ],
+  "related": [
+   "hotend_heater controlled_by hotend_thermistor",
+   "hotend_thermistor wired_through umbilical_wiring"
+  ],
+  "source": "Config [extruder] sensor_pin/sensor_type"
+ },
+ "nozzle": {
+  "id": "nozzle",
+  "name": "Nozzle",
+  "subsystem": "Hotend",
+  "class": "passive_flow",
+  "function": "0.4 mm outlet that shapes the molten filament into lines.",
+  "parameters": [
+   {
+    "key": "[extruder] nozzle_diameter",
+    "value": "0.400",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:150"
+   }
+  ],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "partial or full blockage",
+    "symptom": "thin, gappy lines; extruder clicks",
+    "check": "cold pull; extrude in air and watch flow"
+   },
+   {
+    "mode": "gap or mismatch in filament path",
+    "symptom": "leaks, stringing, intermittent jams",
+    "check": "re-seat tube/nozzle; check fittings"
+   }
+  ],
+  "related": [
+   "heatbreak_ptfe feeds nozzle",
+   "part_cooling_fan cools nozzle"
+  ],
+  "source": "BOM (hotend); config nozzle_diameter"
+ },
+ "heatbreak_ptfe": {
+  "id": "heatbreak_ptfe",
+  "name": "Heatbreak and PTFE/bowden tube",
+  "subsystem": "Hotend",
+  "class": "passive_flow",
+  "function": "Guides filament from extruder into the hot zone and keeps the cold and hot zones separated.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "partial or full blockage",
+    "symptom": "thin, gappy lines; extruder clicks",
+    "check": "cold pull; extrude in air and watch flow"
+   },
+   {
+    "mode": "gap or mismatch in filament path",
+    "symptom": "leaks, stringing, intermittent jams",
+    "check": "re-seat tube/nozzle; check fittings"
+   }
+  ],
+  "related": [
+   "extruder_gears_guidler feeds heatbreak_ptfe",
+   "heatbreak_ptfe feeds nozzle",
+   "hotend_fan cools heatbreak_ptfe"
+  ],
+  "source": "Assembly manual (bowden / hotend)"
+ },
+ "extruder_motor": {
+  "id": "extruder_motor",
+  "name": "Extruder motor and driver",
+  "subsystem": "Extruder",
+  "class": "motor",
+  "function": "Turns the extruder gears to push a metered length of filament into the hotend.",
+  "parameters": [
+   {
+    "key": "[extruder] step_pin",
+    "value": "gpio14",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:143"
+   },
+   {
+    "key": "[extruder] dir_pin",
+    "value": "gpio13",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:144"
+   },
+   {
+    "key": "[extruder] enable_pin",
+    "value": "!gpio15",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:145"
+   },
+   {
+    "key": "[extruder] rotation_distance",
+    "value": "22.23",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:147"
+   },
+   {
+    "key": "[extruder] gear_ratio",
+    "value": "50:10",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:148"
+   },
+   {
+    "key": "[extruder] microsteps",
+    "value": "32",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:149"
+   },
+   {
+    "key": "[extruder] min_extrude_temp",
+    "value": "170",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:163"
+   }
+  ],
+  "connections": [
+   {
+    "role": "step_pin",
+    "board_pin": "gpio14",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:143"
+   },
+   {
+    "role": "dir_pin",
+    "board_pin": "gpio13",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:144"
+   },
+   {
+    "role": "enable_pin",
+    "board_pin": "gpio15",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:145"
+   }
+  ],
+  "failure_modes": [
+   {
+    "mode": "wrong setting (direction, rotation_distance, current, stall threshold)",
+    "symptom": "moves wrong way, wrong distance, skipped steps or bad homing",
+    "check": "compare config values with stock and calibrate"
+   },
+   {
+    "mode": "insufficient torque or driver fault",
+    "symptom": "skipping/clicking under load or at high acceleration",
+    "check": "raise current within limits; check driver temperature and wiring"
+   }
+  ],
+  "related": [
+   "extruder_motor wired_through umbilical_wiring",
+   "extruder_motor drives extruder_gears_guidler"
+  ],
+  "source": "Config [extruder], [tmc2209 extruder]"
+ },
+ "extruder_gears_guidler": {
+  "id": "extruder_gears_guidler",
+  "name": "Extruder gears and guidler (idler arm)",
+  "subsystem": "Extruder",
+  "class": "mechanical_drive",
+  "function": "Grips the filament between drive gears; guidler sets the grip tension.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "loose, slipping or worn transmission",
+    "symptom": "layer shifts, dimensional error, slipping or under-feeding",
+    "check": "check tension/grub screws/wear; mark and observe slip"
+   },
+   {
+    "mode": "misalignment or binding",
+    "symptom": "periodic artefacts, noise, uneven motion",
+    "check": "move by hand with motors off; check alignment"
+   }
+  ],
+  "related": [
+   "extruder_motor drives extruder_gears_guidler",
+   "extruder_gears_guidler feeds heatbreak_ptfe"
+  ],
+  "source": "Assembly manual (extruder / Mini Afterburner)"
+ },
+ "hotend_fan": {
+  "id": "hotend_fan",
+  "name": "Hotend (heatsink) fan",
+  "subsystem": "Cooling",
+  "class": "fan",
+  "function": "Cools the heatsink above the heatbreak so filament stays solid until the melt zone.",
+  "parameters": [
+   {
+    "key": "[heater_fan hotend_fan] pin",
+    "value": "gpio18",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:207"
+   },
+   {
+    "key": "[heater_fan hotend_fan] max_power",
+    "value": "1.0",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:208"
+   },
+   {
+    "key": "[heater_fan hotend_fan] heater_temp",
+    "value": "50.0",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:211"
+   }
+  ],
+  "connections": [
+   {
+    "role": "pin",
+    "board_pin": "gpio18",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:207"
+   }
+  ],
+  "failure_modes": [
+   {
+    "mode": "fan not spinning (failed fan, wiring/polarity, wrong pin)",
+    "symptom": "fan stops or stutters; overheating of what it cools",
+    "check": "command fan to 100%; swap with known good fan/port; check polarity"
+   }
+  ],
+  "related": [
+   "hotend_fan wired_through umbilical_wiring",
+   "hotend_fan cools heatbreak_ptfe"
+  ],
+  "source": "Config [heater_fan hotend_fan]"
+ },
+ "part_cooling_fan": {
+  "id": "part_cooling_fan",
+  "name": "Part cooling fan",
+  "subsystem": "Cooling",
+  "class": "fan",
+  "function": "Blows air on freshly extruded plastic so overhangs and bridges solidify.",
+  "parameters": [
+   {
+    "key": "[fan] pin",
+    "value": "gpio17",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:215"
+   },
+   {
+    "key": "[fan] max_power",
+    "value": "1.0",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:216"
+   },
+   {
+    "key": "[fan] kick_start_time",
+    "value": "0.5",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:217"
+   },
+   {
+    "key": "[fan] off_below",
+    "value": "0.13",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:218"
+   }
+  ],
+  "connections": [
+   {
+    "role": "pin",
+    "board_pin": "gpio17",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:215"
+   }
+  ],
+  "failure_modes": [
+   {
+    "mode": "fan not spinning (failed fan, wiring/polarity, wrong pin)",
+    "symptom": "fan stops or stutters; overheating of what it cools",
+    "check": "command fan to 100%; swap with known good fan/port; check polarity"
+   }
+  ],
+  "related": [
+   "part_cooling_fan wired_through umbilical_wiring",
+   "part_cooling_fan cools nozzle"
+  ],
+  "source": "Config [fan]"
+ },
+ "xy_motors_drivers": {
+  "id": "xy_motors_drivers",
+  "name": "XY (A/B) motors and TMC2209 drivers",
+  "subsystem": "Motion XY",
+  "class": "motor",
+  "function": "Drive the CoreXY belts; drivers also detect stall for sensorless homing.",
+  "parameters": [
+   {
+    "key": "[stepper_x] dir_pin",
+    "value": "gpio10",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:56"
+   },
+   {
+    "key": "[stepper_x] rotation_distance",
+    "value": "40",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:58"
+   },
+   {
+    "key": "[stepper_x] microsteps",
+    "value": "32",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:59"
+   },
+   {
+    "key": "[stepper_x] position_endstop",
+    "value": "120",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:62"
+   },
+   {
+    "key": "[stepper_x] position_max",
+    "value": "120",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:63"
+   },
+   {
+    "key": "[stepper_x] homing_speed",
+    "value": "40",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:64"
+   },
+   {
+    "key": "[tmc2209 stepper_x] diag_pin",
+    "value": "^gpio4",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:77"
+   },
+   {
+    "key": "[tmc2209 stepper_x] driver_SGTHRS",
+    "value": "255",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:78"
+   },
+   {
+    "key": "[stepper_y] dir_pin",
+    "value": "gpio5",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:83"
+   },
+   {
+    "key": "[stepper_y] rotation_distance",
+    "value": "40",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:85"
+   },
+   {
+    "key": "[stepper_y] microsteps",
+    "value": "32",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:86"
+   },
+   {
+    "key": "[stepper_y] position_endstop",
+    "value": "120",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:89"
+   },
+   {
+    "key": "[stepper_y] position_max",
+    "value": "120",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:90"
+   },
+   {
+    "key": "[stepper_y] homing_speed",
+    "value": "40",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:91"
+   },
+   {
+    "key": "[tmc2209 stepper_y] diag_pin",
+    "value": "^gpio3",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:104"
+   },
+   {
+    "key": "[tmc2209 stepper_y] driver_SGTHRS",
+    "value": "255",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:105"
+   }
+  ],
+  "connections": [
+   {
+    "role": "dir_pin",
+    "board_pin": "gpio10",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:56"
+   },
+   {
+    "role": "diag_pin",
+    "board_pin": "gpio4",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:77"
+   },
+   {
+    "role": "dir_pin",
+    "board_pin": "gpio5",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:83"
+   },
+   {
+    "role": "diag_pin",
+    "board_pin": "gpio3",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:104"
+   }
+  ],
+  "failure_modes": [
+   {
+    "mode": "wrong setting (direction, rotation_distance, current, stall threshold)",
+    "symptom": "moves wrong way, wrong distance, skipped steps or bad homing",
+    "check": "compare config values with stock and calibrate"
+   },
+   {
+    "mode": "insufficient torque or driver fault",
+    "symptom": "skipping/clicking under load or at high acceleration",
+    "check": "raise current within limits; check driver temperature and wiring"
+   }
+  ],
+  "related": [
+   "xy_motors_drivers drives xy_belts",
+   "controller_board drives xy_motors_drivers"
+  ],
+  "source": "Config [stepper_x/y], [tmc2209 stepper_x/y]; manual (sensorless homing)"
+ },
+ "xy_belts": {
+  "id": "xy_belts",
+  "name": "XY (A/B) belts",
+  "subsystem": "Motion XY",
+  "class": "mechanical_drive",
+  "function": "Transmit motor motion to the toolhead in the CoreXY layout; need equal tension.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "loose, slipping or worn transmission",
+    "symptom": "layer shifts, dimensional error, slipping or under-feeding",
+    "check": "check tension/grub screws/wear; mark and observe slip"
+   },
+   {
+    "mode": "misalignment or binding",
+    "symptom": "periodic artefacts, noise, uneven motion",
+    "check": "move by hand with motors off; check alignment"
+   }
+  ],
+  "related": [
+   "xy_motors_drivers drives xy_belts",
+   "xy_belts runs_over xy_pulleys_idlers",
+   "xy_belts moves toolhead"
+  ],
+  "source": "Assembly manual (A/B belt path)"
+ },
+ "xy_pulleys_idlers": {
+  "id": "xy_pulleys_idlers",
+  "name": "XY pulleys and idlers",
+  "subsystem": "Motion XY",
+  "class": "mechanical_drive",
+  "function": "Drive pulleys on motor shafts (grub screws) and idlers that route the belts.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "loose, slipping or worn transmission",
+    "symptom": "layer shifts, dimensional error, slipping or under-feeding",
+    "check": "check tension/grub screws/wear; mark and observe slip"
+   },
+   {
+    "mode": "misalignment or binding",
+    "symptom": "periodic artefacts, noise, uneven motion",
+    "check": "move by hand with motors off; check alignment"
+   }
+  ],
+  "related": [
+   "xy_belts runs_over xy_pulleys_idlers"
+  ],
+  "source": "Assembly manual (pulleys, idlers, grub screws)"
+ },
+ "x_linear_rail": {
+  "id": "x_linear_rail",
+  "name": "X linear rail (MGN7)",
+  "subsystem": "Motion XY",
+  "class": "guide",
+  "function": "Guides the toolhead carriage along X with minimal play.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "play or low preload",
+    "symptom": "toolhead/bed rocks; height or position varies across the plate",
+    "check": "push gently and look for play; replace with preloaded rail"
+   },
+   {
+    "mode": "binding or misalignment",
+    "symptom": "periodic lines, extra load on motor",
+    "check": "move by hand; re-align and lubricate"
+   }
+  ],
+  "related": [
+   "toolhead guided_by x_linear_rail",
+   "x_linear_rail carried_by y_linear_rails"
+  ],
+  "source": "BOM (linear rails); assembly manual (X axis)"
+ },
+ "y_linear_rails": {
+  "id": "y_linear_rails",
+  "name": "Y linear rails",
+  "subsystem": "Motion XY",
+  "class": "guide",
+  "function": "Guide the X gantry along Y.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "play or low preload",
+    "symptom": "toolhead/bed rocks; height or position varies across the plate",
+    "check": "push gently and look for play; replace with preloaded rail"
+   },
+   {
+    "mode": "binding or misalignment",
+    "symptom": "periodic lines, extra load on motor",
+    "check": "move by hand; re-align and lubricate"
+   }
+  ],
+  "related": [
+   "x_linear_rail carried_by y_linear_rails"
+  ],
+  "source": "BOM; assembly manual (Y axis)"
+ },
+ "toolhead": {
+  "id": "toolhead",
+  "name": "Toolhead body and mounts",
+  "subsystem": "Toolhead",
+  "class": "structure",
+  "function": "Holds hotend, extruder and fans rigidly on the X carriage.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "not rigid, loose or not level",
+    "symptom": "uneven first layer, ringing, height varies by position",
+    "check": "check fasteners and tramming; press test"
+   }
+  ],
+  "related": [
+   "xy_belts moves toolhead",
+   "toolhead guided_by x_linear_rail"
+  ],
+  "source": "Assembly manual (toolhead)"
+ },
+ "z_motor_leadscrew": {
+  "id": "z_motor_leadscrew",
+  "name": "Z motor and lead screw",
+  "subsystem": "Bed/Z",
+  "class": "motor",
+  "function": "Moves the bed up and down; T8x8 integrated lead screw (8 mm per turn).",
+  "parameters": [
+   {
+    "key": "[stepper_z] dir_pin",
+    "value": "!gpio28",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:113"
+   },
+   {
+    "key": "[stepper_z] rotation_distance",
+    "value": "8",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:115"
+   },
+   {
+    "key": "[stepper_z] microsteps",
+    "value": "32",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:116"
+   }
+  ],
+  "connections": [
+   {
+    "role": "dir_pin",
+    "board_pin": "gpio28",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:113"
+   }
+  ],
+  "failure_modes": [
+   {
+    "mode": "wrong setting (direction, rotation_distance, current, stall threshold)",
+    "symptom": "moves wrong way, wrong distance, skipped steps or bad homing",
+    "check": "compare config values with stock and calibrate"
+   },
+   {
+    "mode": "insufficient torque or driver fault",
+    "symptom": "skipping/clicking under load or at high acceleration",
+    "check": "raise current within limits; check driver temperature and wiring"
+   }
+  ],
+  "related": [
+   "z_motor_leadscrew moves bed_plate_carrier",
+   "z_endstop references z_motor_leadscrew",
+   "controller_board drives z_motor_leadscrew"
+  ],
+  "source": "Config [stepper_z]; manual (Z axis)"
+ },
+ "z_rails": {
+  "id": "z_rails",
+  "name": "Z linear rails",
+  "subsystem": "Bed/Z",
+  "class": "guide",
+  "function": "Guide the bed carriage vertically.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "play or low preload",
+    "symptom": "toolhead/bed rocks; height or position varies across the plate",
+    "check": "push gently and look for play; replace with preloaded rail"
+   },
+   {
+    "mode": "binding or misalignment",
+    "symptom": "periodic lines, extra load on motor",
+    "check": "move by hand; re-align and lubricate"
+   }
+  ],
+  "related": [
+   "bed_plate_carrier guided_by z_rails"
+  ],
+  "source": "Assembly manual (Z axis)"
+ },
+ "z_endstop": {
+  "id": "z_endstop",
+  "name": "Z endstop switch, bracket and position_endstop",
+  "subsystem": "Bed/Z",
+  "class": "sensor",
+  "function": "Defines the Z reference (bed fully down at max Z); sets nozzle-to-bed distance for every layer.",
+  "parameters": [
+   {
+    "key": "[stepper_z] endstop_pin",
+    "value": "^gpio25",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:117"
+   },
+   {
+    "key": "[stepper_z] position_endstop",
+    "value": "120",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:118"
+   },
+   {
+    "key": "[stepper_z] position_max",
+    "value": "120",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:119"
+   },
+   {
+    "key": "[stepper_z] homing_speed",
+    "value": "20",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:121"
+   },
+   {
+    "key": "[stepper_z] second_homing_speed",
+    "value": "3.0",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:122"
+   }
+  ],
+  "connections": [
+   {
+    "role": "endstop_pin",
+    "board_pin": "gpio25",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:117"
+   }
+  ],
+  "failure_modes": [
+   {
+    "mode": "open or shorted sensor / wiring",
+    "symptom": "'ADC out of range' or absurd reading, shutdown",
+    "check": "check connector and wiring; measure resistance at room temperature"
+   },
+   {
+    "mode": "wrong sensor configuration (type, pullup, trigger threshold)",
+    "symptom": "reading offset from real value or false/no trigger",
+    "check": "compare sensor_type/pullup/threshold with hardware and docs"
+   },
+   {
+    "mode": "intermittent contact or loose mount",
+    "symptom": "spikes, drops or drifting reference between runs",
+    "check": "wiggle test while watching readings; check mount rigidity"
+   }
+  ],
+  "related": [
+   "z_endstop references z_motor_leadscrew"
+  ],
+  "source": "Config [stepper_z]; manual (Z endstop)"
+ },
+ "bed_heater": {
+  "id": "bed_heater",
+  "name": "Bed heater",
+  "subsystem": "Bed",
+  "class": "heater",
+  "function": "Heats the build plate so the first layer adheres.",
+  "parameters": [
+   {
+    "key": "[heater_bed] heater_pin",
+    "value": "gpio21",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:188"
+   },
+   {
+    "key": "[heater_bed] min_temp",
+    "value": "0",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:195"
+   },
+   {
+    "key": "[heater_bed] max_temp",
+    "value": "120",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:196"
+   },
+   {
+    "key": "[heater_bed] control",
+    "value": "pid",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:197"
+   }
+  ],
+  "connections": [
+   {
+    "role": "heater_pin",
+    "board_pin": "gpio21",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:188"
+   }
+  ],
+  "failure_modes": [
+   {
+    "mode": "no or weak heating (open circuit, loose cartridge, failed output)",
+    "symptom": "slow or no heat-up, 'not heating at expected rate' error, cold prints",
+    "check": "watch temperature graph during heat-up; measure resistance; check cartridge clamped"
+   },
+   {
+    "mode": "control or limit setting wrong (PID, max_temp)",
+    "symptom": "temperature oscillates or printer shuts down at high temperature",
+    "check": "compare PID/max_temp with stock config; re-run PID_CALIBRATE"
+   }
+  ],
+  "related": [
+   "bed_heater controlled_by bed_thermistor",
+   "bed_heater mounted_on bed_plate_carrier",
+   "controller_board powers bed_heater"
+  ],
+  "source": "Config [heater_bed]"
+ },
+ "bed_thermistor": {
+  "id": "bed_thermistor",
+  "name": "Bed thermistor",
+  "subsystem": "Bed",
+  "class": "sensor",
+  "function": "Measures bed temperature for control and safety.",
+  "parameters": [
+   {
+    "key": "[heater_bed] sensor_pin",
+    "value": "gpio26",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:192"
+   },
+   {
+    "key": "[heater_bed] min_temp",
+    "value": "0",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:195"
+   },
+   {
+    "key": "[heater_bed] max_temp",
+    "value": "120",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:196"
+   }
+  ],
+  "connections": [
+   {
+    "role": "sensor_pin",
+    "board_pin": "gpio26",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:192"
+   }
+  ],
+  "failure_modes": [
+   {
+    "mode": "open or shorted sensor / wiring",
+    "symptom": "'ADC out of range' or absurd reading, shutdown",
+    "check": "check connector and wiring; measure resistance at room temperature"
+   },
+   {
+    "mode": "wrong sensor configuration (type, pullup, trigger threshold)",
+    "symptom": "reading offset from real value or false/no trigger",
+    "check": "compare sensor_type/pullup/threshold with hardware and docs"
+   },
+   {
+    "mode": "intermittent contact or loose mount",
+    "symptom": "spikes, drops or drifting reference between runs",
+    "check": "wiggle test while watching readings; check mount rigidity"
+   }
+  ],
+  "related": [
+   "bed_heater controlled_by bed_thermistor"
+  ],
+  "source": "Config [heater_bed]"
+ },
+ "bed_plate_carrier": {
+  "id": "bed_plate_carrier",
+  "name": "Bed plate, carrier and tramming screws",
+  "subsystem": "Bed",
+  "class": "structure",
+  "function": "Rigid, flat, trammed print surface on a cantilever carrier with three adjustment screws.",
+  "parameters": [
+   {
+    "key": "[bed_screws] screw1",
+    "value": "60,5",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:271"
+   },
+   {
+    "key": "[bed_screws] screw2",
+    "value": "5,115",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:273"
+   },
+   {
+    "key": "[bed_screws] screw3",
+    "value": "115,115",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:275"
+   }
+  ],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "not rigid, loose or not level",
+    "symptom": "uneven first layer, ringing, height varies by position",
+    "check": "check fasteners and tramming; press test"
+   }
+  ],
+  "related": [
+   "z_motor_leadscrew moves bed_plate_carrier",
+   "bed_plate_carrier guided_by z_rails",
+   "bed_heater mounted_on bed_plate_carrier"
+  ],
+  "source": "Config [bed_screws]; manual (bed carrier)"
+ },
+ "controller_board": {
+  "id": "controller_board",
+  "name": "Controller board (SKR Pico) incl. jumpers",
+  "subsystem": "Electronics",
+  "class": "electronics",
+  "function": "Runs Klipper MCU firmware; every motor, heater, fan and sensor is wired to its pins; diag jumpers enable sensorless homing.",
+  "parameters": [
+   {
+    "key": "[mcu] serial",
+    "value": "/dev/serial/by-id/usb-Klipper_rp2040_REPLACE_WITH_YOUR_VALUE",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:26"
+   }
+  ],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "power or connection fault",
+    "symptom": "board does not start, disconnects mid-print",
+    "check": "check supply voltages, connectors, jumpers, USB link"
+   },
+   {
+    "mode": "configuration/jumper mismatch",
+    "symptom": "Klipper config error or a function never triggers",
+    "check": "compare jumpers and pins with wiring docs"
+   }
+  ],
+  "related": [
+   "controller_board drives xy_motors_drivers",
+   "controller_board drives z_motor_leadscrew",
+   "controller_board powers bed_heater",
+   "umbilical_wiring connects_to controller_board",
+   "power_supply powers controller_board",
+   "host_computer talks_to controller_board",
+   "firmware_config_macros configures controller_board"
+  ],
+  "source": "Config (all pins); wiring docs (SKR Pico)"
+ },
+ "umbilical_wiring": {
+  "id": "umbilical_wiring",
+  "name": "Umbilical / Picobilical wiring and connectors",
+  "subsystem": "Electronics",
+  "class": "wiring",
+  "function": "Carries power and signals between frame electronics and the moving toolhead (heater, thermistor, fans).",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "intermittent or swapped conductors in connectors",
+    "symptom": "several toolhead functions cut out together; fans/thermistor erratic",
+    "check": "re-seat connectors; continuity and wiggle test; check pinout"
+   }
+  ],
+  "related": [
+   "hotend_heater wired_through umbilical_wiring",
+   "hotend_thermistor wired_through umbilical_wiring",
+   "hotend_fan wired_through umbilical_wiring",
+   "part_cooling_fan wired_through umbilical_wiring",
+   "extruder_motor wired_through umbilical_wiring",
+   "umbilical_wiring connects_to controller_board"
+  ],
+  "source": "Docs (Picobilical / umbilical); manual (wiring)"
+ },
+ "power_supply": {
+  "id": "power_supply",
+  "name": "Power supply (24 V) and 5 V rail",
+  "subsystem": "Electronics",
+  "class": "electronics",
+  "function": "Supplies 24 V to boards and heaters and 5 V to the host computer and display.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "power or connection fault",
+    "symptom": "board does not start, disconnects mid-print",
+    "check": "check supply voltages, connectors, jumpers, USB link"
+   },
+   {
+    "mode": "configuration/jumper mismatch",
+    "symptom": "Klipper config error or a function never triggers",
+    "check": "compare jumpers and pins with wiring docs"
+   }
+  ],
+  "related": [
+   "power_supply powers controller_board",
+   "power_supply powers host_computer"
+  ],
+  "source": "BOM (PSU); wiring docs"
+ },
+ "host_computer": {
+  "id": "host_computer",
+  "name": "Host computer (Raspberry Pi) running Klipper",
+  "subsystem": "Electronics",
+  "class": "electronics",
+  "function": "Runs Klipper host software and talks to the MCUs over USB/UART.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "power or connection fault",
+    "symptom": "board does not start, disconnects mid-print",
+    "check": "check supply voltages, connectors, jumpers, USB link"
+   },
+   {
+    "mode": "configuration/jumper mismatch",
+    "symptom": "Klipper config error or a function never triggers",
+    "check": "compare jumpers and pins with wiring docs"
+   }
+  ],
+  "related": [
+   "power_supply powers host_computer",
+   "host_computer talks_to controller_board"
+  ],
+  "source": "Docs (software setup)"
+ },
+ "filament_runout_sensor": {
+  "id": "filament_runout_sensor",
+  "name": "Filament runout sensor",
+  "subsystem": "Firmware/sensors",
+  "class": "sensor",
+  "function": "Pauses the print when filament runs out.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "open or shorted sensor / wiring",
+    "symptom": "'ADC out of range' or absurd reading, shutdown",
+    "check": "check connector and wiring; measure resistance at room temperature"
+   },
+   {
+    "mode": "wrong sensor configuration (type, pullup, trigger threshold)",
+    "symptom": "reading offset from real value or false/no trigger",
+    "check": "compare sensor_type/pullup/threshold with hardware and docs"
+   },
+   {
+    "mode": "intermittent contact or loose mount",
+    "symptom": "spikes, drops or drifting reference between runs",
+    "check": "wiggle test while watching readings; check mount rigidity"
+   }
+  ],
+  "related": [
+   "filament_runout_sensor triggers firmware_config_macros"
+  ],
+  "source": "Config (commented filament_switch_sensor)"
+ },
+ "firmware_config_macros": {
+  "id": "firmware_config_macros",
+  "name": "Firmware configuration and macros (limits, PAUSE, PID, input shaper)",
+  "subsystem": "Firmware",
+  "class": "software",
+  "function": "Settings and macros that define limits, safety checks, homing and print start/pause behaviour.",
+  "parameters": [
+   {
+    "key": "[printer] max_velocity",
+    "value": "200",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:43"
+   },
+   {
+    "key": "[printer] max_accel",
+    "value": "2000",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:44"
+   }
+  ],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "setting or macro inconsistent with this machine",
+    "symptom": "errors such as move out of range, refusing to extrude, unexpected pauses or artefacts",
+    "check": "read the error; compare macro/limits with machine size and stock config"
+   }
+  ],
+  "related": [
+   "filament_runout_sensor triggers firmware_config_macros",
+   "firmware_config_macros configures controller_board"
+  ],
+  "source": "Config file"
+ },
+ "slicer_settings": {
+  "id": "slicer_settings",
+  "name": "Slicer settings",
+  "subsystem": "Slicer",
+  "class": "software",
+  "function": "G-code generation choices: wall order, speeds, temperatures, retraction.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "setting or macro inconsistent with this machine",
+    "symptom": "errors such as move out of range, refusing to extrude, unexpected pauses or artefacts",
+    "check": "read the error; compare macro/limits with machine size and stock config"
+   }
+  ],
+  "related": [],
+  "source": "Slicer profiles"
+ },
+ "filament_material": {
+  "id": "filament_material",
+  "name": "Filament (material condition)",
+  "subsystem": "Material",
+  "class": "material",
+  "function": "The plastic being printed; must be dry and within spec.",
+  "parameters": [],
+  "connections": [],
+  "failure_modes": [
+   {
+    "mode": "material condition out of spec (moisture, diameter)",
+    "symptom": "popping, stringing, rough surfaces",
+    "check": "dry filament; measure diameter"
+   }
+  ],
+  "related": [],
+  "source": "Generic"
+ }
+}

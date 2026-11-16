@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs written by the running assistant (personal use data)
+eval/assistant_v2_sessions/
+logs/
+
+# Office lock files
+.~lock*
+~$*
+
+# Original CAD download (32 MB). The converted model static/cad/voron02r1.glb is kept;
+# the STEP file can be downloaded again from the Voron GitHub (see README).
+tools/cad/*.zip
+tools/cad/*.step
+tools/cad/*.stp
+
+# Local helper files
+start_assistant_8901.bat
+check_syntax.bat
+check_result.txt
+
+# Third-party guide (not public)
+data/indexes/chunks_D.jsonl
+data/indexes/emb_D_*
+publish_public.bat

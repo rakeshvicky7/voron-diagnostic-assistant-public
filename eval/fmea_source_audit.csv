@@ -1,0 +1,68 @@
+mode,part,failure,source,source types,status
+mains_loose,mains_power_input,loose plug / worn cord / loose AC terminal,BOM:34-35; DOC electrical,BOM+DOC,supported (auto)
+mains_dead,mains_power_input,"no mains (socket, cord, switch, fuse in inlet)",BOM:34-35,BOM,supported (auto)
+psu_weak,power_supply,PSU weak / overload protection trips,BOM LRS-150-24; PHY (bed 60 W + hotend),BOM+PHY,supported (auto)
+psu_dead,power_supply,PSU dead,BOM LRS-150-24,BOM,supported (auto)
+psu_5v_low,power_supply,5 V rail for the Pi too low (Pi browns out),DOC electrical (5 V supply for the Pi),DOC,supported (auto)
+dc_crimp,dc_power_wiring,bad crimp / loose 24 V screw terminal,DOC electrical ('bad crimps are a major source of problems'),DOC,supported (auto)
+mcu_dead,controller_board,controller board dead / not powered,KLP common errors (Unable to connect),KLP,supported: Klipper common errors doc
+mcu_flash,firmware_config_macros,board not flashed / wrong serial id or MCU type in printer.cfg,CFG [mcu] serial REPLACE_WITH_YOUR_VALUE,CFG,supported (auto) + Klipper common errors doc
+mcu_unstable,controller_board,"board resets / USB link drops (overheated driver, USB cable, EMI)",KLP common errors (Lost communication),KLP,needs manual check
+driver_hot,xy_motors_drivers,stepper driver overheats (no board fan / current too high),CFG [tmc2209] run_current comment; PHY,CFG+PHY,supported (auto)
+host_os,host_computer,"Raspberry Pi software / SD card / OS problem (freezes, slow)",KLP common errors (Timer too close),KLP,needs manual check
+host_power,host_computer,Raspberry Pi under-powered / crashes,DOC electrical,DOC,supported (auto)
+cfg_syntax,firmware_config_macros,config error / wrong or duplicate pin in printer.cfg,KLP config reference,KLP,supported: Klipper common errors doc
+cfg_pid,firmware_config_macros,hotend PID not tuned (temperature oscillates / heater error),CFG [extruder] pid_Kp/Ki/Kd,CFG,supported (auto)
+cfg_rotdist,firmware_config_macros,wrong rotation_distance / gear_ratio (extruder or axis),"CFG [extruder] rotation_distance 22.23, gear_ratio 50:10",CFG,supported (auto)
+cfg_zoffset,firmware_config_macros,wrong Z position_endstop / saved Z offset,CFG [stepper_z] position_endstop 120,CFG,supported (auto)
+cfg_range,firmware_config_macros,position_max / homing or macro wrong ('Move out of range'),CFG [stepper_x/y/z] position_max 120,CFG,supported (auto)
+cfg_sensorless,firmware_config_macros,sensorless homing threshold / speed badly set,"CFG driver_SGTHRS 255, homing_speed 40",CFG,supported (auto)
+heater_dead,hotend_heater,heater cartridge open / weak,PHY P=V^2/R; KLP verify_heater,KLP+PHY,needs manual check
+heater_loose,hotend_heater,heater cartridge loose in the block / missing sock (heat loss),PHY,PHY,supported: practice P12 (sock + PID fixed the heater error)
+therm_bad,hotend_thermistor,hotend thermistor broken / wrong type,CFG comment 'Generic 3950'; KLP ADC range,KLP,supported: Klipper common errors doc
+therm_loose,hotend_thermistor,hotend thermistor loose in the block,PHY,PHY,engineering reasoning only
+umb_therm,umbilical_wiring,broken strand / bad pin in the toolhead cable (thermistor/heater lines),DOC electrical (umbilical); PHY flex fatigue,DOC+PHY,supported (auto)
+umb_motor,umbilical_wiring,broken extruder-motor or fan wire in the toolhead cable,PHY flex fatigue,PHY,supported: generic troubleshooting guide; practice P03 (broken extruder wire in the cable chain)
+umb_comm,umbilical_wiring,bad connector in the toolhead/umbilical board link,LDO V0.2r1 umbilical board,,needs manual check
+nozzle_clog,nozzle,nozzle partly or fully clogged,MAN nozzle; PHY,MAN+PHY,supported (auto)
+nozzle_loose,nozzle,nozzle not tightened hot / wrong nozzle,MAN hotend assembly,MAN,supported (auto)
+heatbreak_gap,heatbreak_ptfe,gap between PTFE/heatbreak and nozzle (leak or jam),MAN hotend assembly,MAN,supported (auto)
+heatbreak_dirty,heatbreak_ptfe,"heatbreak / PTFE degraded or rough (friction, jams on retraction)",PHY,PHY,supported: generic troubleshooting guide
+heat_creep,hotend_fan,hotend fan dead or weak -> heat creep,CFG [heater_fan] heater_temp 50; PHY heat creep,CFG+PHY,supported (auto)
+hotend_fan_noise,hotend_fan,hotend fan bearing worn,BOM 3010 axial fan,BOM,supported (auto)
+part_fan_dead,part_cooling_fan,part cooling blower dead / not commanded,CFG [fan]; slicer fan from layer 4,CFG,supported (auto)
+part_fan_cools_block,part_cooling_fan,part fan blows on the heater block (no sock),PHY,PHY,supported: practice P12 (sock)
+ext_weak,extruder_motor,extruder motor weak / run_current too low / overheating,CFG run_current comments (0.3-0.6 A for pancake motors),CFG,supported (auto)
+ext_dead,extruder_motor,extruder motor or its wiring dead / one coil open,PHY,PHY,supported: generic troubleshooting guide
+ext_dir,extruder_motor,extruder direction wrong (retracts instead of extruding),CFG [extruder] dir_pin comment,CFG,supported (auto)
+gears_grip,extruder_gears_guidler,"guidler too loose / worn drive gear (slips, grinds filament)",BMG kit (BOM:79); C14 GitHub issue (guidler deforms),BOM,supported (auto)
+gears_debris,extruder_gears_guidler,debris/grub screw loose on the BMG gears,BMG kit,,needs manual check
+fil_wet,filament_material,wet filament,PHY (hygroscopic filament),PHY,supported: generic troubleshooting guide
+fil_tangle,filament_material,tangled spool / snagging path,PHY,PHY,supported: generic troubleshooting guide; practice P08 (spool pulled with jerks)
+fil_diam,filament_material,filament diameter out of tolerance / poor quality,CFG filament_diameter 1.750,CFG,supported (auto)
+slicer_fast,slicer_settings,speed / flow too high for the hotend,Slicer profile 125 mm/s x 0.2 x 0.44 = 11 mm3/s,,needs manual check
+slicer_temp,slicer_settings,print temperature / cooling / retraction wrong,"Slicer profile (250 C, bed 90-100 C for ABS)",,needs manual check
+slicer_walls,slicer_settings,slicer wall order / seams / flow settings cause surface artefacts,R12-type community fix (wall ordering),,needs manual check
+runout_false,filament_runout_sensor,"runout switch triggers falsely (wiring, switch, PAUSE macro)",CFG [filament_switch_sensor] (commented out by default),CFG,supported (auto)
+belt_loose,xy_belts,belt(s) loose or worn,MAN p.141-142 (110 Hz),MAN,supported (auto)
+belt_route,xy_belts,belt routed wrong / twisted / rubbing after re-belting,MAN belt path,MAN,supported (auto)
+belt_unequal,xy_belts,A and B belt tension unequal,MAN p.142,MAN,supported (auto)
+pulley_grub,xy_pulleys_idlers,loose pulley grub screw on an A/B motor,MAN (grub screws on the flat); PHY CoreXY: one motor slipping = diagonal,MAN+PHY,supported (auto)
+idler_bad,xy_pulleys_idlers,idler bearing worn / idler misaligned (belt climbs),MAN idlers (F623 bearings),MAN,supported (auto)
+motor_skip,xy_motors_drivers,A/B motor current too low / motor weak (skips at speed),CFG run_current comment; slicer 2000 mm/s2,CFG,supported (auto)
+sensorless_home,xy_motors_drivers,sensorless homing (StallGuard) unreliable,CFG endstop_pin tmc2209_stepper_x:virtual_endstop,CFG,supported (auto)
+xrail_bind,x_linear_rail,"X rail dry, dirty or damaged",MAN MGN7H rails; maintenance page,MAN,supported (auto)
+yrail_bind,y_linear_rails,"Y rails dry, dirty or misaligned",MAN MGN7H rails,MAN,supported (auto)
+toolhead_loose,toolhead,loose toolhead parts / carriage screws,PHY,PHY,supported: generic troubleshooting guide
+zend_loose,z_endstop,Z endstop switch or mount loose / sagging,LDO V0.2 R1 notes (endstop bracket reinforced),,needs manual check
+zend_wire,z_endstop,Z endstop wire broken / switch dead,CFG [stepper_z] endstop_pin ^gpio25; DOC (NC check),CFG+DOC,supported (auto)
+z_screw,z_motor_leadscrew,lead screw / anti-backlash nut binding or worn,BOM T8x8 anti-backlash nut,BOM,supported (auto)
+z_motor_dead,z_motor_leadscrew,Z motor or coupler failed,BOM NEMA17 integrated lead screw,BOM,supported (auto)
+zrail_bind,z_rails,Z rails binding / misaligned with the lead screw,MAN Z axis; community (preloaded rails),MAN,supported (auto)
+bed_tram,bed_plate_carrier,bed not trammed (3 screws),"CFG [bed_screws] (60,5),(5,115),(115,115)",CFG,supported (auto)
+bed_loose,bed_plate_carrier,"bed/plate loose, warped or bowing when hot","BOM MIC6 plate, die springs; PHY thermal bowing",BOM+PHY,supported (auto)
+bed_adhesion,bed_plate_carrier,dirty / worn PEI surface,BOM PEI sheet,BOM,supported (auto)
+bedheater_dead,bed_heater,bed heater pad open / weak / wiring,BOM 60 W 24 V pad; PHY R=V^2/P,BOM+PHY,supported (auto)
+bed_power_limit,bed_heater,bed max_power / heater too weak for the setting,CFG [heater_bed]; KLP verify_heater,CFG+KLP,needs manual check
+fuse_blown,bed_thermal_fuse,bed thermal fuse open,BOM:46 thermal fuse 150 C,BOM,supported (auto)
+bedtherm_bad,bed_thermistor,bed thermistor broken / loose / wrong type,CFG [heater_bed] sensor (Generic 3950),CFG,supported (auto)

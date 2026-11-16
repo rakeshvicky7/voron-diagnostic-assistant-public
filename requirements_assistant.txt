@@ -1,0 +1,3 @@
+# Optional extras for the voice + visual assistant (src/assistant.py). The assistant also works without them.
+faster-whisper>=1.1   # offline speech to text  https://github.com/SYSTRAN/faster-whisper
+piper-tts>=1.3        # offline text to speech  https://github.com/OHF-Voice/piper1-gpl

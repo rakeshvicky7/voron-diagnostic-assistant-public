@@ -1,0 +1,515 @@
+[
+  {
+    "name": "mcu",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:28"
+  },
+  {
+    "name": "temperature_sensor mcu_temp",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:34"
+  },
+  {
+    "name": "temperature_sensor raspberry_pi",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:39"
+  },
+  {
+    "name": "printer",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:47"
+  },
+  {
+    "name": "stepper_x",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:66"
+  },
+  {
+    "name": "tmc2209 stepper_x",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:78"
+  },
+  {
+    "name": "stepper_y",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:93"
+  },
+  {
+    "name": "tmc2209 stepper_y",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:105"
+  },
+  {
+    "name": "stepper_z",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:123"
+  },
+  {
+    "name": "tmc2209 stepper_z",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:136"
+  },
+  {
+    "name": "extruder",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:167"
+  },
+  {
+    "name": "tmc2209 extruder",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:181"
+  },
+  {
+    "name": "heater_bed",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:200"
+  },
+  {
+    "name": "heater_fan hotend_fan",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:211"
+  },
+  {
+    "name": "fan",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:219"
+  },
+  {
+    "name": "controller_fan MCU_fan",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:225"
+  },
+  {
+    "name": "idle_timeout",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:242"
+  },
+  {
+    "name": "homing_override",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:246"
+  },
+  {
+    "name": "bed_screws",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:276"
+  },
+  {
+    "name": "neopixel board_rgb",
+    "origin": "config",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:288"
+  },
+  {
+    "name": "Makerbeam XL 15x15 200mm",
+    "origin": "bom",
+    "category": "Extrusion Tophat Frame",
+    "qty": "4",
+    "source": "voron0.2_bom.csv:23"
+  },
+  {
+    "name": "Makerbeam XL 15x15 100mm",
+    "origin": "bom",
+    "category": "Frame",
+    "qty": "3",
+    "source": "voron0.2_bom.csv:22"
+  },
+  {
+    "name": "Makerbeam XL 15x15 80-100mm",
+    "origin": "bom",
+    "category": "Extrusion Tophat Frame",
+    "qty": "4",
+    "source": "voron0.2_bom.csv:24"
+  },
+  {
+    "name": "Meanwell LRS-150-24",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:25"
+  },
+  {
+    "name": "Bigtreetech SKR Pico",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:26"
+  },
+  {
+    "name": "Raspberry Pi 3",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:27"
+  },
+  {
+    "name": "MicroSD Card",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:28"
+  },
+  {
+    "name": "NEMA14 Stepper Motor 40Ncm",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "2",
+    "source": "voron0.2_bom.csv:29"
+  },
+  {
+    "name": "NEMA17 Stepper Motor w/ integrated lead screw 200mm T8x8",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:30"
+  },
+  {
+    "name": "3010 blower fans 24V",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "2",
+    "source": "voron0.2_bom.csv:31"
+  },
+  {
+    "name": "3010 axial fan 24V",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "2",
+    "source": "voron0.2_bom.csv:32"
+  },
+  {
+    "name": "Omron Mouse Button - Micro Switch",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "2",
+    "source": "voron0.2_bom.csv:33"
+  },
+  {
+    "name": "C13 Power Cord",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:34"
+  },
+  {
+    "name": "IEC320 C14 inlet",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:35"
+  },
+  {
+    "name": "Hotend",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:36"
+  },
+  {
+    "name": "24V Heater Cartridge",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:37"
+  },
+  {
+    "name": "Hotend thermistor",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:38"
+  },
+  {
+    "name": "V0-Display",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:39"
+  },
+  {
+    "name": "ECAS04 Bowden Fitting",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:40"
+  },
+  {
+    "name": "3M 5952 VHB tape",
+    "origin": "bom",
+    "category": "Electronics",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:41"
+  },
+  {
+    "name": "Insulated Crimp Receptical",
+    "origin": "bom",
+    "category": "Cables",
+    "qty": "4",
+    "source": "voron0.2_bom.csv:42"
+  },
+  {
+    "name": "High Flex Wire 22gauge 100ft",
+    "origin": "bom",
+    "category": "Cables",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:43"
+  },
+  {
+    "name": "High Flex Wire 20gauge 10ft",
+    "origin": "bom",
+    "category": "Cables",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:44"
+  },
+  {
+    "name": "Wire 18gauge 10ft",
+    "origin": "bom",
+    "category": "Cables",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:45"
+  },
+  {
+    "name": "Thermal Fuse 150C",
+    "origin": "bom",
+    "category": "Cables",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:46"
+  },
+  {
+    "name": "JST connectors (2pin 3pin 4pin)",
+    "origin": "bom",
+    "category": "Cables",
+    "qty": "?",
+    "source": "voron0.2_bom.csv:47"
+  },
+  {
+    "name": "Microfit3 Dual Row (10circuits) Male & Female Plug",
+    "origin": "bom",
+    "category": "Cables",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:48"
+  },
+  {
+    "name": "7mm x 7mm cable chain (less than 1/2 meter needed)",
+    "origin": "bom",
+    "category": "Cables",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:49"
+  },
+  {
+    "name": "Nylon Cable Ties (1.8mm wide or smaller)",
+    "origin": "bom",
+    "category": "Cables",
+    "qty": "50",
+    "source": "voron0.2_bom.csv:50"
+  },
+  {
+    "name": "F623-RS Bearing",
+    "origin": "bom",
+    "category": "Motion",
+    "qty": "24",
+    "source": "voron0.2_bom.csv:51"
+  },
+  {
+    "name": "MGN7H Linear Rail with Carriage - 150mm",
+    "origin": "bom",
+    "category": "Motion",
+    "qty": "5",
+    "source": "voron0.2_bom.csv:52"
+  },
+  {
+    "name": "GT2 20T (5mm ID 6mm W)",
+    "origin": "bom",
+    "category": "Motion",
+    "qty": "2",
+    "source": "voron0.2_bom.csv:53"
+  },
+  {
+    "name": "GT2 Open Belt (6mm W) - 3000mm",
+    "origin": "bom",
+    "category": "Motion",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:54"
+  },
+  {
+    "name": "T8x8 Anti-backlash Flange Nut",
+    "origin": "bom",
+    "category": "Motion",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:55"
+  },
+  {
+    "name": "MIC6 1/4\" Plate - 120x120mm",
+    "origin": "bom",
+    "category": "Buildplate",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:56"
+  },
+  {
+    "name": "Silicone DC 24V Heater 100x100mm 60W",
+    "origin": "bom",
+    "category": "Buildplate",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:57"
+  },
+  {
+    "name": "PEI + 3M 468MP (200MP)",
+    "origin": "bom",
+    "category": "Buildplate",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:58"
+  },
+  {
+    "name": "yellow die springs 8x4x20mm",
+    "origin": "bom",
+    "category": "Buildplate",
+    "qty": "3",
+    "source": "voron0.2_bom.csv:59"
+  },
+  {
+    "name": "Magnetic sheet for spring steel plate 120x120 (OPTIONAL)",
+    "origin": "bom",
+    "category": "Buildplate",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:60"
+  },
+  {
+    "name": "Spring Steel Flex Buildplate 120x120mm (OPTIONAL)",
+    "origin": "bom",
+    "category": "Buildplate",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:61"
+  },
+  {
+    "name": "Acrylic Sheet Clear (sides) - 212x230x3mm",
+    "origin": "bom",
+    "category": "Panels",
+    "qty": "2",
+    "source": "voron0.2_bom.csv:62"
+  },
+  {
+    "name": "Acrylic Sheet Clear (door) - 212x239x3mm",
+    "origin": "bom",
+    "category": "Panels",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:63"
+  },
+  {
+    "name": "Upper Rear Panel 212x63x3mm",
+    "origin": "bom",
+    "category": "Panels",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:64"
+  },
+  {
+    "name": "Lower Rear Panel 212x185x3mm",
+    "origin": "bom",
+    "category": "Panels",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:65"
+  },
+  {
+    "name": "Deck Panel 3mm thick (See DXF)",
+    "origin": "bom",
+    "category": "Panels",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:66"
+  },
+  {
+    "name": "Motor Panel 3mm thick (See DXF)",
+    "origin": "bom",
+    "category": "Panels",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:67"
+  },
+  {
+    "name": "Bottom Panel 3mm thick (See DXF)",
+    "origin": "bom",
+    "category": "Panels",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:68"
+  },
+  {
+    "name": "Mid Panel 3mm thick (See DXF)",
+    "origin": "bom",
+    "category": "Panels",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:69"
+  },
+  {
+    "name": "Bowden Fitting",
+    "origin": "bom",
+    "category": "Bowden",
+    "qty": "2",
+    "source": "voron0.2_bom.csv:70"
+  },
+  {
+    "name": "Bowden Tube 4x2mm - 1m",
+    "origin": "bom",
+    "category": "Bowden",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:71"
+  },
+  {
+    "name": "Little Rubber Feet",
+    "origin": "bom",
+    "category": "Misc.",
+    "qty": "4",
+    "source": "voron0.2_bom.csv:72"
+  },
+  {
+    "name": "Bowden Tube 4x3mm - 1m",
+    "origin": "bom",
+    "category": "Misc.",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:73"
+  },
+  {
+    "name": "Medium Strength Thread Locker",
+    "origin": "bom",
+    "category": "Misc.",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:74"
+  },
+  {
+    "name": "6mm x 3mm Round Neodymium Magnets",
+    "origin": "bom",
+    "category": "Misc.",
+    "qty": "8",
+    "source": "voron0.2_bom.csv:75"
+  },
+  {
+    "name": "Top Panel 212x212mm",
+    "origin": "bom",
+    "category": "Extrusion Tophat Panels",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:76"
+  },
+  {
+    "name": "Side Panels 212x(71-91)mm",
+    "origin": "bom",
+    "category": "Extrusion Tophat Panels",
+    "qty": "4",
+    "source": "voron0.2_bom.csv:77"
+  },
+  {
+    "name": "NEMA14 36mm pancake Motor with 10 tooth gear",
+    "origin": "bom",
+    "category": "Extruder",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:78"
+  },
+  {
+    "name": "Bondtech BMG Extruder Kit",
+    "origin": "bom",
+    "category": "Extruder",
+    "qty": "1",
+    "source": "voron0.2_bom.csv:79"
+  },
+  {
+    "name": "MR85 Bearing",
+    "origin": "bom",
+    "category": "Extruder",
+    "qty": "3",
+    "source": "voron0.2_bom.csv:80"
+  }
+]

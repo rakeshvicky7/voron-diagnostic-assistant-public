@@ -1,0 +1,219 @@
+[
+  {
+    "component": "stepper_x",
+    "role": "step_pin",
+    "board_pin": "gpio11",
+    "raw": "gpio11",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:54"
+  },
+  {
+    "component": "stepper_x",
+    "role": "dir_pin",
+    "board_pin": "gpio10",
+    "raw": "gpio10",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:56"
+  },
+  {
+    "component": "stepper_x",
+    "role": "enable_pin",
+    "board_pin": "gpio12",
+    "raw": "!gpio12",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:57"
+  },
+  {
+    "component": "tmc2209 stepper_x",
+    "role": "uart_pin",
+    "board_pin": "gpio9",
+    "raw": "gpio9",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:69"
+  },
+  {
+    "component": "tmc2209 stepper_x",
+    "role": "tx_pin",
+    "board_pin": "gpio8",
+    "raw": "gpio8",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:70"
+  },
+  {
+    "component": "tmc2209 stepper_x",
+    "role": "diag_pin",
+    "board_pin": "gpio4",
+    "raw": "^gpio4",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:77"
+  },
+  {
+    "component": "stepper_y",
+    "role": "step_pin",
+    "board_pin": "gpio6",
+    "raw": "gpio6",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:81"
+  },
+  {
+    "component": "stepper_y",
+    "role": "dir_pin",
+    "board_pin": "gpio5",
+    "raw": "gpio5",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:83"
+  },
+  {
+    "component": "stepper_y",
+    "role": "enable_pin",
+    "board_pin": "gpio7",
+    "raw": "!gpio7",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:84"
+  },
+  {
+    "component": "tmc2209 stepper_y",
+    "role": "uart_pin",
+    "board_pin": "gpio9",
+    "raw": "gpio9",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:96"
+  },
+  {
+    "component": "tmc2209 stepper_y",
+    "role": "tx_pin",
+    "board_pin": "gpio8",
+    "raw": "gpio8",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:97"
+  },
+  {
+    "component": "tmc2209 stepper_y",
+    "role": "diag_pin",
+    "board_pin": "gpio3",
+    "raw": "^gpio3",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:104"
+  },
+  {
+    "component": "stepper_z",
+    "role": "step_pin",
+    "board_pin": "gpio19",
+    "raw": "gpio19",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:112"
+  },
+  {
+    "component": "stepper_z",
+    "role": "dir_pin",
+    "board_pin": "gpio28",
+    "raw": "!gpio28",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:113"
+  },
+  {
+    "component": "stepper_z",
+    "role": "enable_pin",
+    "board_pin": "gpio2",
+    "raw": "!gpio2",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:114"
+  },
+  {
+    "component": "stepper_z",
+    "role": "endstop_pin",
+    "board_pin": "gpio25",
+    "raw": "^gpio25",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:117"
+  },
+  {
+    "component": "tmc2209 stepper_z",
+    "role": "uart_pin",
+    "board_pin": "gpio9",
+    "raw": "gpio9",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:127"
+  },
+  {
+    "component": "tmc2209 stepper_z",
+    "role": "tx_pin",
+    "board_pin": "gpio8",
+    "raw": "gpio8",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:128"
+  },
+  {
+    "component": "extruder",
+    "role": "step_pin",
+    "board_pin": "gpio14",
+    "raw": "gpio14",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:143"
+  },
+  {
+    "component": "extruder",
+    "role": "dir_pin",
+    "board_pin": "gpio13",
+    "raw": "gpio13",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:144"
+  },
+  {
+    "component": "extruder",
+    "role": "enable_pin",
+    "board_pin": "gpio15",
+    "raw": "!gpio15",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:145"
+  },
+  {
+    "component": "extruder",
+    "role": "heater_pin",
+    "board_pin": "gpio23",
+    "raw": "gpio23",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:152"
+  },
+  {
+    "component": "extruder",
+    "role": "sensor_pin",
+    "board_pin": "gpio27",
+    "raw": "gpio27",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:156"
+  },
+  {
+    "component": "tmc2209 extruder",
+    "role": "uart_pin",
+    "board_pin": "gpio9",
+    "raw": "gpio9",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:170"
+  },
+  {
+    "component": "tmc2209 extruder",
+    "role": "tx_pin",
+    "board_pin": "gpio8",
+    "raw": "gpio8",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:171"
+  },
+  {
+    "component": "heater_bed",
+    "role": "heater_pin",
+    "board_pin": "gpio21",
+    "raw": "gpio21",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:188"
+  },
+  {
+    "component": "heater_bed",
+    "role": "sensor_pin",
+    "board_pin": "gpio26",
+    "raw": "gpio26",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:192"
+  },
+  {
+    "component": "heater_fan hotend_fan",
+    "role": "pin",
+    "board_pin": "gpio18",
+    "raw": "gpio18",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:207"
+  },
+  {
+    "component": "fan",
+    "role": "pin",
+    "board_pin": "gpio17",
+    "raw": "gpio17",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:215"
+  },
+  {
+    "component": "controller_fan MCU_fan",
+    "role": "pin",
+    "board_pin": "gpio20",
+    "raw": "gpio20",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:222"
+  },
+  {
+    "component": "neopixel board_rgb",
+    "role": "pin",
+    "board_pin": "gpio24",
+    "raw": "gpio24",
+    "source": "bigtreetech-skr-pico-v1.0.cfg:283"
+  }
+]

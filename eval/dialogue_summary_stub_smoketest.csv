@@ -1,0 +1,4 @@
+subset,n,top1,top1_lo95,top1_hi95,top3,top3_lo95,top3_hi95,mean_questions,mean_secs,within1check,w1c_lo95,w1c_hi95
+all,3,0.0,0,0.562,0.333,0.061,0.792,6.67,0.0,0.0,0,0.562
+real community cases,3,0.0,0,0.562,0.333,0.061,0.792,6.67,0.0,0.0,0,0.562
+unseen (not in guide),3,0.0,0,0.562,0.333,0.061,0.792,6.67,0.0,0.0,0,0.562

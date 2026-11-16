@@ -1,0 +1,566 @@
+{
+ "nodes": {
+  "hotend_heater": {
+   "id": "hotend_heater",
+   "name": "Hotend heater cartridge",
+   "class": "heater",
+   "subsystem": "Hotend"
+  },
+  "hotend_thermistor": {
+   "id": "hotend_thermistor",
+   "name": "Hotend thermistor",
+   "class": "sensor",
+   "subsystem": "Hotend"
+  },
+  "nozzle": {
+   "id": "nozzle",
+   "name": "Nozzle",
+   "class": "passive_flow",
+   "subsystem": "Hotend"
+  },
+  "heatbreak_ptfe": {
+   "id": "heatbreak_ptfe",
+   "name": "Heatbreak and PTFE/bowden tube",
+   "class": "passive_flow",
+   "subsystem": "Hotend"
+  },
+  "extruder_motor": {
+   "id": "extruder_motor",
+   "name": "Extruder motor and driver",
+   "class": "motor",
+   "subsystem": "Extruder"
+  },
+  "extruder_gears_guidler": {
+   "id": "extruder_gears_guidler",
+   "name": "Extruder gears and guidler (idler arm)",
+   "class": "mechanical_drive",
+   "subsystem": "Extruder"
+  },
+  "hotend_fan": {
+   "id": "hotend_fan",
+   "name": "Hotend (heatsink) fan",
+   "class": "fan",
+   "subsystem": "Cooling"
+  },
+  "part_cooling_fan": {
+   "id": "part_cooling_fan",
+   "name": "Part cooling fan",
+   "class": "fan",
+   "subsystem": "Cooling"
+  },
+  "xy_motors_drivers": {
+   "id": "xy_motors_drivers",
+   "name": "XY (A/B) motors and TMC2209 drivers",
+   "class": "motor",
+   "subsystem": "Motion XY"
+  },
+  "xy_belts": {
+   "id": "xy_belts",
+   "name": "XY (A/B) belts",
+   "class": "mechanical_drive",
+   "subsystem": "Motion XY"
+  },
+  "xy_pulleys_idlers": {
+   "id": "xy_pulleys_idlers",
+   "name": "XY pulleys and idlers",
+   "class": "mechanical_drive",
+   "subsystem": "Motion XY"
+  },
+  "x_linear_rail": {
+   "id": "x_linear_rail",
+   "name": "X linear rail (MGN7)",
+   "class": "guide",
+   "subsystem": "Motion XY"
+  },
+  "y_linear_rails": {
+   "id": "y_linear_rails",
+   "name": "Y linear rails",
+   "class": "guide",
+   "subsystem": "Motion XY"
+  },
+  "toolhead": {
+   "id": "toolhead",
+   "name": "Toolhead body and mounts",
+   "class": "structure",
+   "subsystem": "Toolhead"
+  },
+  "z_motor_leadscrew": {
+   "id": "z_motor_leadscrew",
+   "name": "Z motor and lead screw",
+   "class": "motor",
+   "subsystem": "Bed/Z"
+  },
+  "z_rails": {
+   "id": "z_rails",
+   "name": "Z linear rails",
+   "class": "guide",
+   "subsystem": "Bed/Z"
+  },
+  "z_endstop": {
+   "id": "z_endstop",
+   "name": "Z endstop switch, bracket and position_endstop",
+   "class": "sensor",
+   "subsystem": "Bed/Z"
+  },
+  "bed_heater": {
+   "id": "bed_heater",
+   "name": "Bed heater",
+   "class": "heater",
+   "subsystem": "Bed"
+  },
+  "bed_thermistor": {
+   "id": "bed_thermistor",
+   "name": "Bed thermistor",
+   "class": "sensor",
+   "subsystem": "Bed"
+  },
+  "bed_plate_carrier": {
+   "id": "bed_plate_carrier",
+   "name": "Bed plate, carrier and tramming screws",
+   "class": "structure",
+   "subsystem": "Bed"
+  },
+  "controller_board": {
+   "id": "controller_board",
+   "name": "Controller board (SKR Pico) incl. jumpers",
+   "class": "electronics",
+   "subsystem": "Electronics"
+  },
+  "umbilical_wiring": {
+   "id": "umbilical_wiring",
+   "name": "Umbilical / Picobilical wiring and connectors",
+   "class": "wiring",
+   "subsystem": "Electronics"
+  },
+  "power_supply": {
+   "id": "power_supply",
+   "name": "Power supply (24 V) and 5 V rail",
+   "class": "electronics",
+   "subsystem": "Electronics"
+  },
+  "host_computer": {
+   "id": "host_computer",
+   "name": "Host computer (Raspberry Pi) running Klipper",
+   "class": "electronics",
+   "subsystem": "Electronics"
+  },
+  "filament_runout_sensor": {
+   "id": "filament_runout_sensor",
+   "name": "Filament runout sensor",
+   "class": "sensor",
+   "subsystem": "Firmware/sensors"
+  },
+  "firmware_config_macros": {
+   "id": "firmware_config_macros",
+   "name": "Firmware configuration and macros (limits, PAUSE, PID, input shaper)",
+   "class": "software",
+   "subsystem": "Firmware"
+  },
+  "slicer_settings": {
+   "id": "slicer_settings",
+   "name": "Slicer settings",
+   "class": "software",
+   "subsystem": "Slicer"
+  },
+  "filament_material": {
+   "id": "filament_material",
+   "name": "Filament (material condition)",
+   "class": "material",
+   "subsystem": "Material"
+  }
+ },
+ "edges": [
+  {
+   "src": "controller_board",
+   "dst": "xy_motors_drivers",
+   "rel": "drives",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:56",
+   "how": "automatic (config pin)"
+  },
+  {
+   "src": "controller_board",
+   "dst": "z_motor_leadscrew",
+   "rel": "drives",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:113",
+   "how": "automatic (config pin)"
+  },
+  {
+   "src": "controller_board",
+   "dst": "z_endstop",
+   "rel": "reads_signal_of",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:117",
+   "how": "automatic (config pin)"
+  },
+  {
+   "src": "controller_board",
+   "dst": "extruder_motor",
+   "rel": "drives",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:143",
+   "how": "automatic (config pin)"
+  },
+  {
+   "src": "controller_board",
+   "dst": "hotend_heater",
+   "rel": "drives",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:152",
+   "how": "automatic (config pin)"
+  },
+  {
+   "src": "controller_board",
+   "dst": "hotend_thermistor",
+   "rel": "reads_signal_of",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:156",
+   "how": "automatic (config pin)"
+  },
+  {
+   "src": "controller_board",
+   "dst": "bed_heater",
+   "rel": "drives",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:188",
+   "how": "automatic (config pin)"
+  },
+  {
+   "src": "controller_board",
+   "dst": "bed_thermistor",
+   "rel": "reads_signal_of",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:192",
+   "how": "automatic (config pin)"
+  },
+  {
+   "src": "controller_board",
+   "dst": "hotend_fan",
+   "rel": "drives",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:207",
+   "how": "automatic (config pin)"
+  },
+  {
+   "src": "controller_board",
+   "dst": "part_cooling_fan",
+   "rel": "drives",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:215",
+   "how": "automatic (config pin)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "hotend_heater",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:152",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "hotend_thermistor",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:156",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "nozzle",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:150",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "extruder_motor",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:143",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "hotend_fan",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:207",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "part_cooling_fan",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:215",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "xy_motors_drivers",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:56",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "z_motor_leadscrew",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:113",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "z_endstop",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:117",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "bed_heater",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:188",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "bed_thermistor",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:192",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "bed_plate_carrier",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:271",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "firmware_config_macros",
+   "dst": "controller_board",
+   "rel": "configures",
+   "source": "bigtreetech-skr-pico-v1.0.cfg:26",
+   "how": "automatic (config values)"
+  },
+  {
+   "src": "power_supply",
+   "dst": "controller_board",
+   "rel": "powers",
+   "source": "Documentation site: build/electrical (24 V supply to controller)",
+   "how": "by hand"
+  },
+  {
+   "src": "power_supply",
+   "dst": "host_computer",
+   "rel": "powers",
+   "source": "Documentation site: build/electrical (5 V supply to Raspberry Pi)",
+   "how": "by hand"
+  },
+  {
+   "src": "host_computer",
+   "dst": "controller_board",
+   "rel": "commands",
+   "source": "Documentation site: build/software (Klipper host talks to the MCU over USB)",
+   "how": "by hand"
+  },
+  {
+   "src": "controller_board",
+   "dst": "umbilical_wiring",
+   "rel": "feeds",
+   "source": "VORON_V0.2r1_Assembly_Manual.pdf p.188 (toolhead wiring routed from the motor plate)",
+   "how": "by hand"
+  },
+  {
+   "src": "umbilical_wiring",
+   "dst": "hotend_heater",
+   "rel": "carries_power_to",
+   "source": "VORON_V0.2r1_Assembly_Manual.pdf p.188 (heater wires routed in the umbilical)",
+   "how": "by hand"
+  },
+  {
+   "src": "umbilical_wiring",
+   "dst": "hotend_thermistor",
+   "rel": "carries_signal_of",
+   "source": "VORON_V0.2r1_Assembly_Manual.pdf p.188 (thermistor wires routed in the umbilical)",
+   "how": "by hand"
+  },
+  {
+   "src": "umbilical_wiring",
+   "dst": "hotend_fan",
+   "rel": "carries_power_to",
+   "source": "VORON_V0.2r1_Assembly_Manual.pdf p.188 (hotend fan wires routed in the umbilical)",
+   "how": "by hand"
+  },
+  {
+   "src": "umbilical_wiring",
+   "dst": "part_cooling_fan",
+   "rel": "carries_power_to",
+   "source": "VORON_V0.2r1_Assembly_Manual.pdf pp.187-188 (toolhead wire routing)",
+   "how": "by hand"
+  },
+  {
+   "src": "umbilical_wiring",
+   "dst": "extruder_motor",
+   "rel": "carries_power_to",
+   "source": "VORON_V0.2r1_Assembly_Manual.pdf pp.187-188 (toolhead wire routing)",
+   "how": "by hand"
+  },
+  {
+   "src": "xy_motors_drivers",
+   "dst": "xy_pulleys_idlers",
+   "rel": "turns",
+   "source": "Assembly manual: motion (CoreXY A/B motors with pulleys)",
+   "how": "by hand"
+  },
+  {
+   "src": "xy_pulleys_idlers",
+   "dst": "xy_belts",
+   "rel": "drives",
+   "source": "Assembly manual: motion (belt path over pulleys and idlers)",
+   "how": "by hand"
+  },
+  {
+   "src": "xy_belts",
+   "dst": "toolhead",
+   "rel": "moves",
+   "source": "Assembly manual: motion (belts clamp to the toolhead)",
+   "how": "by hand"
+  },
+  {
+   "src": "x_linear_rail",
+   "dst": "toolhead",
+   "rel": "guides",
+   "source": "Assembly manual: gantry (toolhead on the X rail)",
+   "how": "by hand"
+  },
+  {
+   "src": "y_linear_rails",
+   "dst": "x_linear_rail",
+   "rel": "carries",
+   "source": "Assembly manual: gantry (X rail carried by the Y rails)",
+   "how": "by hand"
+  },
+  {
+   "src": "z_motor_leadscrew",
+   "dst": "bed_plate_carrier",
+   "rel": "moves",
+   "source": "Assembly manual: Z axis (lead screw lifts the bed carrier)",
+   "how": "by hand"
+  },
+  {
+   "src": "z_rails",
+   "dst": "bed_plate_carrier",
+   "rel": "guides",
+   "source": "Assembly manual: Z axis (bed carrier on the Z rails)",
+   "how": "by hand"
+  },
+  {
+   "src": "z_endstop",
+   "dst": "z_motor_leadscrew",
+   "rel": "references_homing_of",
+   "source": "Documentation site: build/startup (Z homes to the endstop)",
+   "how": "by hand"
+  },
+  {
+   "src": "bed_thermistor",
+   "dst": "bed_heater",
+   "rel": "controls",
+   "source": "Config [heater_bed]: heater controlled from the bed sensor",
+   "how": "by hand"
+  },
+  {
+   "src": "bed_heater",
+   "dst": "bed_plate_carrier",
+   "rel": "heats",
+   "source": "Assembly manual: bed (heater mounted on the bed plate)",
+   "how": "by hand"
+  },
+  {
+   "src": "extruder_motor",
+   "dst": "extruder_gears_guidler",
+   "rel": "drives",
+   "source": "Assembly manual: print head (motor drives the drive gears)",
+   "how": "by hand"
+  },
+  {
+   "src": "extruder_gears_guidler",
+   "dst": "heatbreak_ptfe",
+   "rel": "feeds_filament_to",
+   "source": "Assembly manual: print head (filament path)",
+   "how": "by hand"
+  },
+  {
+   "src": "heatbreak_ptfe",
+   "dst": "nozzle",
+   "rel": "feeds_filament_to",
+   "source": "Assembly manual: print head (filament path)",
+   "how": "by hand"
+  },
+  {
+   "src": "filament_material",
+   "dst": "extruder_gears_guidler",
+   "rel": "feeds",
+   "source": "Slicer profiles / documentation site: filament path",
+   "how": "by hand"
+  },
+  {
+   "src": "filament_material",
+   "dst": "nozzle",
+   "rel": "flows_through",
+   "source": "Slicer profiles / documentation site: filament path",
+   "how": "by hand"
+  },
+  {
+   "src": "hotend_thermistor",
+   "dst": "hotend_heater",
+   "rel": "controls",
+   "source": "Config [extruder]: heater controlled from the hotend sensor",
+   "how": "by hand"
+  },
+  {
+   "src": "hotend_heater",
+   "dst": "nozzle",
+   "rel": "heats",
+   "source": "Assembly manual: print head (heater block holds the nozzle)",
+   "how": "by hand"
+  },
+  {
+   "src": "hotend_fan",
+   "dst": "heatbreak_ptfe",
+   "rel": "cools",
+   "source": "Documentation site: build/startup (heatsink fan prevents clogging)",
+   "how": "by hand"
+  },
+  {
+   "src": "part_cooling_fan",
+   "dst": "nozzle",
+   "rel": "cools_output_of",
+   "source": "Documentation site: slicer/first print (part cooling)",
+   "how": "by hand"
+  },
+  {
+   "src": "filament_runout_sensor",
+   "dst": "firmware_config_macros",
+   "rel": "triggers",
+   "source": "Config [filament_switch_sensor] (pause on runout)",
+   "how": "by hand"
+  },
+  {
+   "src": "slicer_settings",
+   "dst": "nozzle",
+   "rel": "commands_flow_and_temperature_of",
+   "source": "Slicer profiles (temperatures, flow, retraction)",
+   "how": "by hand"
+  },
+  {
+   "src": "slicer_settings",
+   "dst": "part_cooling_fan",
+   "rel": "commands",
+   "source": "Slicer profiles (fan speeds)",
+   "how": "by hand"
+  },
+  {
+   "src": "slicer_settings",
+   "dst": "toolhead",
+   "rel": "commands_motion_of",
+   "source": "Slicer profiles (speeds, accelerations)",
+   "how": "by hand"
+  },
+  {
+   "src": "toolhead",
+   "dst": "nozzle",
+   "rel": "carries",
+   "source": "Assembly manual: print head (hotend mounted in the toolhead)",
+   "how": "by hand"
+  }
+ ]
+}

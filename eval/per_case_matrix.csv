@@ -1,0 +1,43 @@
+case,type,unseen,A,B,C,D,E
+C01,Constructed,False,1,1,3,1,1
+C02,Constructed,True,1,1,1,3,1
+C03,Constructed,True,1,-,1,-,1
+C04,Constructed,True,1,1,1,1,1
+C05,Constructed,False,1,1,1,1,1
+C06,Constructed,False,-,-,3,-,-
+C07,Constructed,True,-,1,-,-,-
+C08,Constructed,False,-,-,1,3,1
+C09,Constructed,False,-,-,3,-,3
+C10,Constructed,False,1,3,3,3,3
+C11,Constructed,False,-,-,3,-,1
+C12,Constructed,False,-,-,3,-,3
+C13,Constructed,False,-,1,1,-,1
+C14,Constructed,False,3,1,1,3,1
+C15,Constructed,True,1,1,-,1,-
+C16,Constructed,True,1,1,1,-,3
+C17,Constructed,False,-,-,3,-,1
+C18,Constructed,False,-,3,-,-,3
+C19,Constructed,True,-,-,-,3,3
+C20,Constructed,True,3,3,3,3,1
+C21,Constructed,False,3,-,3,-,3
+C22,Constructed,True,3,3,3,3,3
+C23,Constructed,True,3,3,3,3,3
+C24,Constructed,True,3,3,3,-,3
+C25,Constructed,False,-,3,3,-,3
+C26,Constructed,True,3,-,1,-,3
+C27,Constructed,True,-,1,3,1,3
+C28,Constructed,False,-,-,1,3,1
+R01,Real (community),True,1,1,3,1,1
+R02,Real (community),True,3,-,3,-,3
+R03,Real (community),True,-,3,-,-,-
+R04,Real (community),True,-,-,3,-,3
+R05,Real (community),False,3,1,1,-,1
+R06,Real (community),True,1,1,1,1,3
+R07,Real (community),False,-,-,3,-,-
+R08,Real (community),False,1,1,1,1,1
+R09,Real (community),True,-,-,-,-,-
+R10,Real (community),True,-,-,3,-,3
+R11,Real (community),True,3,3,3,-,3
+R12,Real (community),False,-,-,-,-,-
+R13,Real (community),True,-,3,3,-,3
+R14,Real (community),True,3,3,1,3,1

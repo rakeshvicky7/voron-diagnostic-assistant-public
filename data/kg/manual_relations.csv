@@ -1,0 +1,2 @@
+from_component;relation;to_component;evidence;source_document;page
+EXAMPLE X/Y motor A;drives;belt A;CoreXY belt path;VORON_V0.2r1_Assembly_Manual.pdf;<page>
