@@ -78,20 +78,40 @@ def _authorized(handler):
     handler.send_response(401); handler.send_header("WWW-Authenticate", 'Basic realm="Voron assistant demo"')
     handler.send_header("Content-Length", "0"); handler.end_headers(); return False
 
+_GZ = {}                     # static file path -> gzip bytes, compressed once per server run
+_GZ_LOCK = threading.Lock()
+def _gzip_of(f):
+    """Gzip version of a static file: a ready-made .gz next to it (made in the Dockerfile) or compressed once and kept in memory."""
+    key = str(f)
+    if key in _GZ: return _GZ[key]
+    with _GZ_LOCK:
+        if key not in _GZ:
+            pre = pathlib.Path(key + ".gz")
+            if pre.is_file() and pre.stat().st_mtime >= f.stat().st_mtime: _GZ[key] = pre.read_bytes()
+            else:
+                import gzip
+                _GZ[key] = gzip.compress(f.read_bytes(), 6)
+    return _GZ[key]
+
 class H(BaseHTTPRequestHandler):
-    def _send(self, code, body, ctype):
+    def _send(self, code, body, ctype, cache="no-store", gz=False):
         b = body if isinstance(body, bytes) else body.encode("utf-8")
         self.send_response(code); self.send_header("Content-Type", ctype); self.send_header("Content-Length", str(len(b)))
-        self.send_header("Cache-Control", "no-store"); self.end_headers(); self.wfile.write(b)
+        if gz: self.send_header("Content-Encoding", "gzip"); self.send_header("Vary", "Accept-Encoding")
+        self.send_header("Cache-Control", cache); self.end_headers(); self.wfile.write(b)
+    def _static(self, f, ctype, cache="no-cache"):
+        """Send a static file, gzip-compressed when the browser accepts it (the 3D model shrinks from 23 MB to about 7 MB)."""
+        if "gzip" in self.headers.get("Accept-Encoding", ""): return self._send(200, _gzip_of(f), ctype, cache, gz=True)
+        return self._send(200, f.read_bytes(), ctype, cache)
     def _json(self, o): self._send(200, json.dumps(o, default=str), "application/json; charset=utf-8")
     def do_GET(self):
         if not _authorized(self): return
         path0 = self.path.split("?")[0]
-        if path0 in PAGES: return self._send(200, (HERE / "static" / PAGES[path0]).read_bytes(), "text/html; charset=utf-8")
+        if path0 in PAGES: return self._static(HERE / "static" / PAGES[path0], "text/html; charset=utf-8")
         if path0.startswith("/app/"):         # shared scripts and styles of the interface
             rel = path0[5:]; f = (HERE / "static" / "app" / rel).resolve()
             if ".." in rel or not str(f).startswith(str((HERE / "static" / "app").resolve())) or not f.is_file(): return self._send(404, b"not found", "text/plain")
-            return self._send(200, f.read_bytes(), "text/css; charset=utf-8" if rel.endswith(".css") else "text/javascript; charset=utf-8")
+            return self._static(f, "text/css; charset=utf-8" if rel.endswith(".css") else "text/javascript; charset=utf-8")
         if path0 == "/api/settings":
             from twin.virtual_printer import SETTINGS, D0
             dflt = {"bed_temp": 90, "belt_a_hz": 110, "belt_b_hz": 110, "z_offset": 0, "xy_current": 1, "e_rotation_distance": 22.23}
@@ -102,7 +122,7 @@ class H(BaseHTTPRequestHandler):
         if self.path.startswith("/vendor/"):     # three.js, bundled so the 3D view works offline
             rel = self.path.split("?")[0][8:]; f = (HERE / "static" / "vendor" / rel).resolve()
             if ".." in rel or not str(f).startswith(str((HERE / "static" / "vendor").resolve())) or not f.is_file(): return self._send(404, b"not found", "text/plain")
-            return self._send(200, f.read_bytes(), "text/javascript; charset=utf-8")
+            return self._static(f, "text/javascript; charset=utf-8", "public, max-age=604800")   # three.js never changes: browser keeps it a week
         if self.path == "/api/info":
             up = (not E.STUB) and ollama_up()
             return self._json({"model": "offline demo (rules only)" if E.STUB else E.LLM_MODEL + (" (cloud)" if os.environ.get("PROVIDER", "").lower() == "openai" else ""), "ollama": up, "learn": os.environ.get("FMEA_NO_LEARN") != "1",
@@ -112,7 +132,8 @@ class H(BaseHTTPRequestHandler):
             name = self.path.split("?")[0][5:]
             f = HERE / "static" / "cad" / name
             if "/" in name or "\\" in name or ".." in name or not f.is_file(): return self._send(404, b"not converted yet", "text/plain")
-            return self._send(200, f.read_bytes(), "model/gltf-binary" if name.endswith(".glb") else "application/json")
+            # the CAD model rarely changes: the browser keeps it a week, so the 3D view loads fast on a second visit
+            return self._static(f, "model/gltf-binary" if name.endswith(".glb") else "application/json", "public, max-age=604800")
         if self.path.split("?")[0] == "/api/twin":
             from urllib.parse import urlparse, parse_qs
             from twin.virtual_printer import VirtualPrinter

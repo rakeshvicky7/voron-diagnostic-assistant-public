@@ -10,6 +10,8 @@ WORKDIR /home/user/app
 
 RUN pip install --no-cache-dir --user "numpy>=1.24" "openpyxl>=3.1"
 COPY --chown=user . .
+# Compress the 23 MB CAD model once at build time (about 7 MB sent to the browser), so the small server does not do it per visit
+RUN gzip -9 -k -f src/assistant_v2/static/cad/voron02r1.glb
 
 # STUB=1: no Ollama in the cloud, the assistant runs on the symptom graph alone.
 # FMEA_NO_LEARN=1: visitors do not change the saved case memory.

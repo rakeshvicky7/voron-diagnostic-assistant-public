@@ -31,7 +31,7 @@ git push
 ## Optional: connect a language model (free Groq API)
 Render's free server is too small to run the model itself, so the online version can call a free cloud model instead. Your laptop version is not affected (it keeps using Ollama).
 1. Create a free account at https://console.groq.com and make a **new** API key (API Keys > Create). Do not reuse keys that were ever shown in a screenshot or chat. Keep it secret.
-2. In the Groq console, open **Models** and pick a model that supports **tool use**, e.g. `llama-3.3-70b-versatile` (check that it is still listed).
+2. In the Groq console, open **Models** and pick a model that supports **tool use**. Recommended: `openai/gpt-oss-120b` (already used with this project through Groq). Fallback: `llama-3.3-70b-versatile`. Check that the name is still listed.
 3. Render dashboard > your service > **Environment** > add these variables, then **Save, rebuild and deploy**:
 
 | Key | Value |
@@ -47,6 +47,11 @@ Render's free server is too small to run the model itself, so the online version
 - Accuracy with a cloud model is **not measured**: the thesis numbers are for the local qwen2.5 7B. Present it as a demo, not as the evaluated system.
 - Free Groq limits (requests per minute and per day) are enough for a demo; heavy use can hit them, and then the assistant falls back to the instant answer.
 - To switch the model off again, set `STUB` back to `1`.
+
+## Make it load faster
+- **Compression (built in):** the server sends the 3D model compressed (23 MB -> about 7 MB) and the browser keeps it for a week, so a second visit loads the 3D view from the browser's own cache.
+- **Stop it from sleeping (free):** create a free account at https://uptimerobot.com (or https://cron-job.org), add an **HTTP monitor** for `https://YOUR-SERVICE.onrender.com/api/info`, interval **10 minutes**. The regular visit keeps the service awake, so nobody waits a minute for it to wake up. One service running all month fits in Render's free hours.
+- Still slow on the very first visit: the free server is small (0.1 CPU). Open the page yourself once before a demo.
 
 ## Good to know
 - **Basic mode only** (no language model): 59 % right part first, 78 % within two checks on the 69 held-out cases. Full mode on your laptop: 65 % and 91 %.
