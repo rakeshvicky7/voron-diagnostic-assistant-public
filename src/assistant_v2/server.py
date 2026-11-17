@@ -185,6 +185,9 @@ class H(BaseHTTPRequestHandler):
                         import uuid; ses = Session(); sid = uuid.uuid4().hex[:8]; FMEA[sid] = ses; ses.refined = False
                     if d.get("message") and not ses.notes:
                         msg = check_input(d["message"])
+                        if msg and msg.startswith("I could not recognise"):   # vague description: ask which concrete symptom it is
+                            from fmea.triage import clarify
+                            return self._json({"session": sid, "type": "clarify", **clarify(d["message"])})
                         if msg: return self._json({"session": sid, "type": "notice", "text": msg})
                     if d.get("message"):
                         ses.describe(d["message"]); text = " ".join(ses.notes)

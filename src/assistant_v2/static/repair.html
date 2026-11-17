@@ -86,6 +86,9 @@ async function describe(t) {
   st.text.push(t); st.looks = {}; const done = chat.typing('Reading your description…');
   let r = await fmea({ message: t });
   if (r.error || r.type === 'notice') { done(); chat.say(esc(r.error || r.text)); return; }
+  if (r.type === 'clarify') {             // vague description: offer the concrete symptoms of the topic as buttons
+    done(); st.text.pop(); const m = chat.say(esc(r.text));
+    chat.buttons(m, (r.options || []).map(o => ({ label: o.label, on: () => userText(o.text) }))); return; }
   st.session = r.session; st.ranked = r.ranked || [];
   // The symptom graph answers at once. The language model then re-ranks the suspects (slow on a laptop without a strong GPU): its result is used when it arrives.
   const sid = r.session, cards0 = () => st.cards;
