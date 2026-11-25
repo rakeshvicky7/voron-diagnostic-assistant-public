@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Testbench: symptom graph with and without the language model</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="/app/ui.css">
+<style>
+main{max-width:1240px;margin:0 auto;padding:24px 20px 60px}
+h1{font-size:24px}h2{font-size:18px;margin:0 0 10px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:var(--shadow);margin-top:18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}@media(max-width:900px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--mut);font-weight:600;background:#fafaf8;position:sticky;top:0}
+.p{font-variant-numeric:tabular-nums}.yes{color:var(--ok);font-weight:600}.no{color:#b5b5ae}
+.bar{height:8px;border-radius:4px;background:var(--acc);display:inline-block;vertical-align:middle}
+.bar.g{background:#1f6f78}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600}
+.tag.help{background:#e3f4ea;color:var(--ok)}.tag.hurt{background:#fde8e6;color:var(--bad)}.tag.same{background:#f0f0ec;color:var(--mut)}
+.truth{background:#e3f4ea;border-radius:4px;padding:0 4px;font-weight:600}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}.kpi div{background:var(--bg);border-radius:10px;padding:10px 12px}.kpi b{display:block;font-size:22px}
+.scroll{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:12px}
+tr.click{cursor:pointer}tr.click:hover td{background:#fbf7f4}
+.note{font-size:13px;color:var(--mut);margin-top:8px}
+.sel label{margin-right:12px;font-size:14px}
+</style></head><body>
+<header id="top"></header>
+<main>
+  <h1>Testbench: symptom graph with and without the language model</h1>
+  <p class="mut">Same calculation as the evaluation (src/fmea/evaluate.py). Left: symptom graph only. Right: symptom graph + language model (arm G's top 3 boost the parts &times;5 / &times;3 / &times;2). No case memory, so results match the thesis.</p>
+
+  <section class="box">
+    <h2>1. Try one description</h2>
+    <textarea id="txt" rows="3" style="width:100%">hotend temperature jumps around and Klipper says ADC out of range</textarea>
+    <label class="small" id="sem-row" style="display:block;margin-top:10px"><input type="checkbox" id="sem"> <b>Meaning matching</b> (embeddings of the 625 wordings with nomic-embed-text; needs Ollama running, no language model). Applies to part 1 and part 2.</label>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" id="b-plain">Analyse: symptom graph only</button>
+      <button id="b-llm">Analyse: with language model</button>
+      <span id="a-status" class="mut small"></span>
+    </div>
+    <div id="a-mode" class="note"></div>
+    <div id="a-out"></div>
+  </section>
+
+  <section class="box" id="part2">
+    <h2>2. Run the test cases</h2>
+    <div class="sel" id="sets"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" id="r-plain">Run: symptom graph only</button>
+      <button id="r-saved">Run: with language model (saved answers)</button>
+      <button id="r-live">Run: with language model (saved + live for missing, needs Ollama)</button>
+      <span id="r-status" class="mut small"></span>
+    </div>
+    <div class="note">Saved answers come from the evaluation run (test_A, test_B). Live answers are run once through Ollama and cached in eval/g_cache.json, so the next run is instant.</div>
+    <div id="r-sum"></div>
+    <div class="scroll"><table id="r-tab"></table></div>
+  </section>
+</main>
+<script type="module">
+import { topbar, get, post, esc, $ } from '/app/common.js';
+topbar('testbench');
+let NAMES = {}, CASES = [];
+const nm = p => esc(NAMES[p] || p);
+const pct = (a, n) => n ? Math.round(100 * a / n) + ' %' : '-';
+
+// ---------------- 1. one description ----------------
+function partsTable(parts, truth, title, cls) {
+  const mx = Math.max(...parts.map(x => x[1]), 0.0001);
+  return `<h3 style="font-size:15px;margin:14px 0 6px">${title}</h3><table><tr><th>#</th><th>Part</th><th>Score</th></tr>` +
+    parts.map(([p, v], i) => `<tr><td>${i + 1}</td><td>${(truth || []).includes(p) ? `<span class="truth">${nm(p)}</span>` : nm(p)}</td>
+      <td class="p"><span class="bar ${cls}" style="width:${Math.round(120 * v / mx)}px"></span> ${(100 * v).toFixed(1)} %</td></tr>`).join('') + '</table>';
+}
+function modesTable(modes, syms) {
+  const head = syms.map(s => `<th title="${esc(s.q)}">${esc(s.id)}</th>`).join('');
+  return `<h3 style="font-size:15px;margin:14px 0 6px">Why: top failure modes (start &times; P of each symptom found)</h3>
+    <div style="overflow:auto"><table><tr><th>Failure mode</th><th>Part</th><th>Start</th>${head}<th>Probability</th></tr>` +
+    modes.map(m => `<tr><td>${esc(m.name)}</td><td>${nm(m.part)}</td><td class="p">${m.start}</td>` +
+      m.sym.map(s => `<td class="p ${s.listed ? 'yes' : 'no'}">${s.P}</td>`).join('') +
+      `<td class="p"><b>${(100 * m.p).toFixed(1)} %</b></td></tr>`).join('') + '</table></div>' +
+    `<div class="note">Green = the failure mode lists this symptom (its probability). Grey = not listed: 0.03 (0.12 for context symptoms), so a failure mode must explain every symptom to stay high.</div>`;
+}
+async function analyze(llm, caseId) {
+  const text = $('#txt').value.trim(); if (!text) { $('#a-status').textContent = 'Type a description first.'; return; }
+  $('#a-status').textContent = llm ? 'Running (the language model can take up to a minute)…' : 'Running…';
+  const r = await post('/api/tb/analyze', { text, llm, case: caseId, sem: $('#sem').checked });
+  $('#a-status').textContent = ''; if (r.error) { $('#a-out').innerHTML = `<p class="mut">${esc(r.error)}</p>`; return; }
+  const truth = caseId ? (CASES.find(c => c.id === caseId) || {}).ok : null;
+  const syms = r.symptoms.length ? `<table><tr><th>Symptom</th><th>Question</th><th>How</th><th>Confidence</th></tr>` +
+      r.symptoms.map(s => `<tr><td>${esc(s.id)}</td><td>${esc(s.q)}</td><td>${esc(s.how)}</td><td class="p ${s.conf > 0 ? 'yes' : 'no'}">${s.conf > 0 ? '+' : ''}${s.conf}</td></tr>`).join('') + '</table>'
+    : '<p class="mut">No symptom recognised: the symptom graph has no evidence, so only the starting scores decide.</p>';
+  let right = '<p class="mut" style="margin-top:14px">Press "Analyse: with language model" to compare.</p>';
+  if (llm) {
+    if (r.g) right = `<div class="note">Language model (arm G) top 3, source: ${esc(r.g_source)}:<br>` +
+        r.g.map((p, i) => `${i + 1}. ${nm(p)} <b>&times;${r.g_weights[i]}</b>`).join(' &nbsp; ') + '</div>' +
+        partsTable(r.parts_llm, truth, 'Symptom graph + language model', 'g') + modesTable(r.modes_llm, r.symptoms);
+    else right = `<p class="mut" style="margin-top:14px">No language-model answer (${esc(r.g_source)}).</p>`;
+  }
+  const close = r.closest ? `<h3 style="font-size:15px;margin:14px 0 6px">Meaning matching: closest wordings per clause</h3>` + r.closest.map(c => `<div class="small"><b>“${esc(c.clause)}”</b>${c.negated ? ' <span class="mut">(has a “not”: left to the word matcher)</span>' : ''}<br>` +
+      c.closest.map(x => `${x.sim.toFixed(2)} · ${esc(x.symptom)} · <span class="mut">“${esc(x.wording)}”</span>`).join('<br>') + '</div>').join('<br>')
+    : r.closest_error ? `<p class="mut">Meaning matching not available: ${esc(r.closest_error)} (is Ollama running with nomic-embed-text?)</p>` : '';
+  $('#a-out').innerHTML = close + `<h3 style="font-size:15px;margin:14px 0 6px">Symptoms found in the words${r.named.length ? ' · parts named: ' + r.named.map(nm).join(', ') + ' (&times;3)' : ''}</h3>${syms}
+    <div class="cols"><div>${partsTable(r.parts, truth, 'Symptom graph only', '')}${modesTable(r.modes, r.symptoms)}</div><div>${right}</div></div>`;
+}
+$('#b-plain').onclick = () => analyze(false, $('#txt').dataset.case);
+$('#b-llm').onclick = () => analyze(true, $('#txt').dataset.case);
+$('#txt').oninput = () => delete $('#txt').dataset.case;
+
+// ---------------- 2. test cases ----------------
+const tb = await get('/api/tb/cases');
+if (tb) {
+  NAMES = tb.names;
+  // what this installation offers: the online version has no test sets and no local embeddings
+  if (!tb.sets) $('#part2').style.display = 'none';
+  if (!tb.sem) { $('#sem-row').style.display = 'none'; $('#sem').checked = false; }
+  if (!tb.llm) { $('#b-llm').disabled = true; $('#b-llm').title = 'No language model connected'; }
+  $('#a-mode').textContent = tb.llm ? `Language model connected: ${tb.model}.` : 'No language model connected: only the symptom graph can be tested here.';
+}
+if (tb && tb.sets) {
+  NAMES = tb.names; CASES = tb.cases;
+  const sets = [...new Set(CASES.map(c => c.set))];
+  $('#sets').innerHTML = 'Sets: ' + sets.map(s => { const n = CASES.filter(c => c.set === s).length, dev = CASES.find(c => c.set === s).dev;
+    return `<label><input type="checkbox" value="${s}" ${dev ? '' : 'checked'}> ${s} (${n})${dev ? ' <span class="mut">dev</span>' : ''}</label>`; }).join('');
+}
+let running = false;
+async function runSet(llm) {
+  if (running) return; running = true;
+  const chosen = [...document.querySelectorAll('#sets input:checked')].map(x => x.value);
+  const list = CASES.filter(c => chosen.includes(c.set)); if (!list.length) { $('#r-status').textContent = 'Choose at least one set.'; running = false; return; }
+  const res = [];
+  for (let i = 0; i < list.length; i++) {
+    $('#r-status').textContent = `case ${i + 1} of ${list.length}${llm === 'live' ? ' (live runs can take a minute each)' : ''}…`;
+    const r = await post('/api/tb/case', { id: list[i].id, llm, sem: $('#sem').checked }); if (!r.error) res.push(r);
+    if (i % 5 === 4 || i === list.length - 1) render(res, llm);
+  }
+  $('#r-status').textContent = `done: ${res.length} cases`; running = false;
+}
+function render(res, llm) {
+  const withG = res.filter(r => r.final);
+  const n = res.length, k = (arr, f) => arr.filter(f).length;
+  const row = (label, arr, key) => `<tr><td>${label}</td><td>${arr.length}</td><td class="p">${pct(k(arr, r => r[key] === 1), arr.length)}</td><td class="p">${pct(k(arr, r => r[key] && r[key] <= 2), arr.length)}</td><td class="p">${pct(k(arr, r => r[key] && r[key] <= 3), arr.length)}</td></tr>`;
+  let sum = `<table style="margin-top:14px;max-width:720px"><tr><th>Version</th><th>Cases</th><th>Right part first</th><th>Top 2</th><th>Top 3</th></tr>` + row('Symptom graph only', res, 'rank0');
+  if (llm !== 'none') {
+    sum += row('Symptom graph only (same cases as below)', withG, 'rank0') + row('Symptom graph + language model', withG, 'rank1') + row('Language model alone (its own top 3)', withG, 'g_rank');
+    const better = k(withG, r => (r.rank1 || 99) < (r.rank0 || 99)), worse = k(withG, r => (r.rank1 || 99) > (r.rank0 || 99));
+    sum += `</table><div class="kpi"><div><b>${withG.length}</b>cases with a language-model answer</div><div><b style="color:var(--ok)">${better}</b>the model moved the right part up</div>
+      <div><b style="color:var(--bad)">${worse}</b>the model moved it down</div><div><b>${withG.length - better - worse}</b>no change</div></div>`;
+    if (withG.length < n) sum += `<div class="note">${n - withG.length} cases have no language-model answer yet (use the live run).</div>`;
+  } else sum += '</table>';
+  const noSym = k(res, r => !r.symptoms.length);
+  sum += `<div class="note">Symptom graph misses: ${k(res, r => !r.rank0 || r.rank0 > 3)} of ${n} not in the top 3; ${noSym} cases had no symptom recognised at all.</div>`;
+  $('#r-sum').innerHTML = sum;
+  $('#r-tab').innerHTML = `<tr><th>Case</th><th>Set</th><th>Truth</th><th>Symptoms found</th><th>Symptom graph top 3</th>${llm !== 'none' ? '<th>Model (arm G) top 3</th><th>Combined top 3</th><th>Effect</th>' : ''}</tr>` +
+    res.map(r => {
+      const mark = l => (l || []).map((p, i) => `<div>${i + 1}. ${r.ok.includes(p) ? `<span class="truth">${nm(p)}</span>` : nm(p)}</div>`).join('') || '<span class="mut">-</span>';
+      let eff = '';
+      if (llm !== 'none') eff = !r.final ? `<span class="mut small">${esc(r.g_source || '')}</span>` :
+        (r.rank1 || 99) < (r.rank0 || 99) ? `<span class="tag help">helped ${r.rank0 || '>5'}&rarr;${r.rank1}</span>` :
+        (r.rank1 || 99) > (r.rank0 || 99) ? `<span class="tag hurt">hurt ${r.rank0}&rarr;${r.rank1 || '>5'}</span>` : `<span class="tag same">same (${r.rank0 || '>5'})</span>`;
+      return `<tr class="click" data-id="${r.id}"><td><b>${r.id}</b><div class="small mut" style="max-width:260px">${esc(r.text)}</div></td><td>${r.set}</td><td>${nm(r.primary)}</td>
+        <td class="small">${r.symptoms.map(esc).join('<br>') || '<span class="no">none</span>'}</td><td class="small">${mark(r.fmea)}</td>
+        ${llm !== 'none' ? `<td class="small">${mark(r.g)}</td><td class="small">${mark(r.final)}</td><td>${eff}</td>` : ''}</tr>`;
+    }).join('');
+  document.querySelectorAll('#r-tab tr.click').forEach(tr => tr.onclick = () => {
+    const c = CASES.find(x => x.id === tr.dataset.id); $('#txt').value = c.text; $('#txt').dataset.case = c.id;
+    window.scrollTo({ top: 0, behavior: 'smooth' }); analyze(llm !== 'none', c.id);
+  });
+}
+$('#r-plain').onclick = () => runSet('none');
+$('#r-saved').onclick = () => runSet('saved');
+$('#r-live').onclick = () => runSet('live');
+</script>
+</body></html>

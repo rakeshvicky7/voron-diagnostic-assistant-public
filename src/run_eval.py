@@ -27,13 +27,19 @@ def wilson(k, n, z=1.96):
     return (round(p, 3), round(max(0, c - w), 3), round(min(1, c + w), 3))
 
 if __name__ == "__main__":
-    ap = argparse.ArgumentParser(); ap.add_argument("--arms", nargs="+", default=list("ABCDE")); a = ap.parse_args()
+    ap = argparse.ArgumentParser(); ap.add_argument("--arms", nargs="+", default=list("ABCDE"))
+    ap.add_argument("--set", choices=["all", "dev", "heldout"], default="all",
+                    help="dev = R01-R14 + C01-C14 (test_A, used to tune); heldout = R15-R30 + C15-C28 (test_B, run once)")
+    a = ap.parse_args()
     # The main model writes to results_raw.jsonl; any other model gets its own files, so results never mix.
     import re
     tag = "" if LLM_MODEL == "qwen2.5:7b-instruct" else "_" + re.sub(r"[^a-z0-9]+", "-", LLM_MODEL.lower()).strip("-")
+    from agent import PROMPT
+    if PROMPT != "plain": tag += "_prompt-" + PROMPT          # a new prompt never mixes with the thesis results
     OUT.mkdir(exist_ok=True); raw = OUT / ("results_raw_stub.jsonl" if STUB else f"results_raw{tag}.jsonl")
     done = {(j["arm"], j["case"]) for j in map(json.loads, open(raw))} if raw.exists() else set()
     C = cases()
+    if a.set != "all": C = [c for c in C if (int(c["id"][1:]) <= 14) == (a.set == "dev")]
     for arm in a.arms:
         tb = Toolbox(arm)
         for c in C:

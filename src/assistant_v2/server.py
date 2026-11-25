@@ -14,7 +14,7 @@ LOGS = E.A / "eval" / "assistant_v2_sessions"
 SESS, LOCK = {}, threading.Lock()
 FMEA = {}
 MEMORY = None
-PAGES = {"/": "home.html", "/assembly": "assembly.html", "/repair": "repair.html", "/twin": "twin.html", "/classic": "index.html"}
+PAGES = {"/testbench": "testbench.html", "/": "home.html", "/assembly": "assembly.html", "/repair": "repair.html", "/twin": "twin.html", "/classic": "index.html"}
 
 SHOW_LABEL = {"when": "When", "stop_type": "How it stops", "temp_behaviour": "Temperature", "which_temp": "Which temperature", "fan_state": "Hotend fan spins", "part_fan_state": "Part fan spins",
               "flow_state": "Plastic flow", "motor_behaviour": "Extruder motor", "shift_axis": "Shift direction", "noise": "Noise", "move_by_hand": "Moved by hand", "z_home": "Z homing",
@@ -123,6 +123,17 @@ class H(BaseHTTPRequestHandler):
             rel = self.path.split("?")[0][8:]; f = (HERE / "static" / "vendor" / rel).resolve()
             if ".." in rel or not str(f).startswith(str((HERE / "static" / "vendor").resolve())) or not f.is_file(): return self._send(404, b"not found", "text/plain")
             return self._static(f, "text/javascript; charset=utf-8", "public, max-age=604800")   # three.js never changes: browser keeps it a week
+        if path0 == "/api/tb/cases":           # testbench: all test cases + part names
+            from assistant_v2 import testbench as TB
+            from fmea.engine import PARTS
+            from config import EMBED_STUB
+            # TESTBENCH_SETS=0 (online version): only part 1 (free descriptions); the test sets are not offered
+            sets = os.environ.get("TESTBENCH_SETS", "1") == "1"
+            llm = (not E.STUB) and os.environ.get("FMEA_G", "1") == "1" and ollama_up()
+            sem = (not EMBED_STUB) and os.environ.get("PROVIDER", "").lower() != "openai" and _ollama_up()   # embeddings need a local Ollama
+            return self._json({"cases": list(TB.cases().values()) if sets else [], "names": {p: PART_NAME(p) for p in PARTS},
+                               "sets": sets, "llm": llm, "sem": sem,
+                               "model": (E.LLM_MODEL + (" (cloud)" if os.environ.get("PROVIDER", "").lower() == "openai" else " (Ollama)")) if llm else ""})
         if self.path == "/api/info":
             up = (not E.STUB) and ollama_up()
             return self._json({"model": "offline demo (rules only)" if E.STUB else E.LLM_MODEL + (" (cloud)" if os.environ.get("PROVIDER", "").lower() == "openai" else ""), "ollama": up, "learn": os.environ.get("FMEA_NO_LEARN") != "1",
@@ -173,11 +184,21 @@ class H(BaseHTTPRequestHandler):
                 with LOCK: r = E.explain(case)
                 r["secs"] = round(time.time() - t, 1); case["log"].append({"time": time.strftime("%H:%M:%S"), "user": None, "reply_type": "explain", "secs": r["secs"]})
                 save(case); return self._json(r)
+            if self.path in ("/api/tb/analyze", "/api/tb/case"):     # testbench: symptom graph with / without the language model
+                from assistant_v2 import testbench as TB
+                ok = (not E.STUB) and os.environ.get("FMEA_G", "1") == "1" and ollama_up()
+                if self.path == "/api/tb/case" and os.environ.get("TESTBENCH_SETS", "1") != "1": return self._json({"error": "test sets are not available in this version"})
+                if self.path == "/api/tb/analyze":
+                    return self._json(TB.analyze(d.get("text", ""), bool(d.get("llm")), d.get("case"), True, ok, bool(d.get("sem"))))
+                return self._json(TB.run_case(d["id"], d.get("llm", "none"), ok, bool(d.get("sem"))))
             if self.path == "/api/fmea":            # the final assistant: symptom graph + case memory + arm G reading
                 from fmea.engine import Session, S as SYM, check_input, boost_from_ranking
                 from fmea import cases as CB
                 global MEMORY
-                sid = d.get("session"); use_g = (not E.STUB) and os.environ.get("FMEA_G", "1") == "1"
+                sid = d.get("session")
+                llm_on = d.get("llm", True) is not False          # the page's "Language model" switch (on by default)
+                llm_possible = (not E.STUB) and os.environ.get("FMEA_G", "1") == "1"
+                use_g = llm_possible and llm_on
                 with LOCK:
                     if MEMORY is None: MEMORY = CB.Memory(CB.load())
                     ses = FMEA.get(sid)
@@ -194,6 +215,9 @@ class H(BaseHTTPRequestHandler):
                         ses.similar = MEMORY.similar(text); ses.mem_boost = MEMORY.boost(text)
                     if d.get("answer"): ses.answer(d["answer"]["id"], {"yes": True, "no": False}.get(d["answer"]["value"]))
                     if d.get("exclude"): ses.exclude(d["exclude"])
+                    # switch off: answer from the symptom graph only; switch on again: reuse the language model's earlier reading
+                    if not llm_on: ses.boost = {}
+                    elif getattr(ses, "g", None) and not ses.boost: ses.boost = boost_from_ranking(ses.g)
                     if d.get("confirm"):                    # the technician confirmed the faulty part: remember the case
                         pm, _ = ses.state(); modes = sorted([(p, m) for m, p in pm.items() if CB_MODES()[m]["part"] == d["confirm"]], reverse=True)
                         CB.remember(" ".join(ses.notes), d["confirm"], CB_MODES()[modes[0][1]]["name"] if modes else "")
@@ -205,7 +229,7 @@ class H(BaseHTTPRequestHandler):
                 if d.get("refine") and use_g and not ses.refined and notes0:
                     try:
                         E.USE_AGENT_PRIOR = True; g = E.agent_top3(notes0)
-                        with LOCK: ses.boost = boost_from_ranking(g); ses.refined = True
+                        with LOCK: ses.g = g; ses.boost = boost_from_ranking(g); ses.refined = True
                     except Exception as e: print("arm G not available:", e); ses.refined = True
                 with LOCK:
                     # Default: name the most likely parts at once; the technician checks them in order. Questions only on request
@@ -215,7 +239,15 @@ class H(BaseHTTPRequestHandler):
                     if x is None: x = next(iter(pp))
                     names = {k: PART_NAME(k) for k in pp}
                     top = [{"id": k, "name": names[k], "p": round(v, 3)} for k, v in list(pp.items())[:4]]
+                    # for the comparison on the page: the ranking of the symptom graph alone, and what the language model said
+                    llm_used = bool(ses.boost)
+                    if llm_used:
+                        keep = ses.boost; ses.boost = {}; _, pp0 = ses.state(); ses.boost = keep
+                    else: pp0 = pp
                     out = {"session": sid, "type": kind, "top": top, "asked": len(ses.asked), "refined": ses.refined,
+                           "llm_on": llm_on, "llm_possible": llm_possible, "llm_used": llm_used,
+                           "graph_only": [{"id": k, "name": names.get(k) or PART_NAME(k), "p": round(v, 3)} for k, v in list(pp0.items())[:3]],
+                           "llm_top3": [{"id": k, "name": PART_NAME(k)} for k in (getattr(ses, "g", None) or [])] if llm_used else [],
                            "refine": bool(use_g and not ses.refined), "seen": [SYM[s][0] for s, c in ses.ev.items() if c > 0],
                            "similar": [{"text": c["text"], "part": PART_NAME(c["part"]), "sim": round(sim, 2)} for sim, c in ses.similar[:1]]}
                     if kind == "ask": out["question"] = {"id": x, "text": SYM[x][0], "how": SYM[x][1]}
@@ -231,7 +263,7 @@ class H(BaseHTTPRequestHandler):
                 return self._json(AQ.answer(d.get("message", ""), d.get("step"), use_model=(not E.STUB) and ollama_up()))
             if self.path == "/api/twin/settings":     # repair assistant: settings described in words, with range checks
                 from twin.twin_control import settings_command
-                return self._json(settings_command(d.get("text", ""), d.get("state") or {}, use_model=(not E.STUB) and ollama_up()))
+                return self._json(settings_command(d.get("text", ""), d.get("state") or {}, use_model=(not E.STUB) and d.get("llm", True) is not False and ollama_up()))
             if self.path == "/api/twin/match":        # which simulated scenario looks like the described problem
                 ses = FMEA.get(d.get("session")); seen = {x for x, c in (ses.ev.items() if ses else []) if c > 0}
                 r = match_scenario(d.get("part") or None, seen, d.get("settings") or None)

@@ -24,6 +24,9 @@ body{overflow:hidden}
 #opendrawer{position:absolute;left:12px;top:12px;z-index:4;box-shadow:var(--shadow)}#app:not(.closed) #opendrawer{display:none}
 .row{display:flex;gap:8px}.row>*{flex:1}
 #chart{width:100%;height:90px;border:1px solid var(--line);border-radius:8px;background:#fafaf8}
+.llmsw{display:flex;align-items:center;gap:6px;font-size:13px;margin:0 6px;cursor:pointer;white-space:nowrap}.llmsw input{width:auto}
+.by{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;margin-bottom:6px;background:#eef3f8;color:#2c5d8a}.by.g{background:#f1f1ec;color:#555}
+.cmp{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0 2px}.cmp th,.cmp td{border:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}.cmp th{background:var(--bg)}
 .welcome{margin:auto;text-align:center;padding:30px 20px;max-width:520px}.welcome h2{font-size:24px;margin-bottom:8px}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three.module.min.js","three/addons/":"/vendor/addons/"}}</script>
@@ -55,12 +58,42 @@ body{overflow:hidden}
 </div>
 <script type="module">
 import { $, esc, fmt, post, get, topbar, Chat, composer } from '/app/common.js';
-topbar('repair', '<button class="sm" id="newcase">New case</button><button class="sm primary" id="simbtn">Open simulation</button>');
+topbar('repair', '<label class="llmsw" title="On: the symptom graph answers at once and the language model (Qwen) then re-ranks the parts. Off: replies come from the symptom graph only."><input type="checkbox" id="llm" checked> Language model</label><button class="sm" id="newcase">New case</button><button class="sm primary" id="simbtn">Open simulation</button>');
 const chat = Chat($('#log'));
-const st = { session: null, sim: false, stage: 'describe', settings: {}, askedConfig: false, baselineDone: false, ranked: [], shown: new Set(), looks: {}, cur: null, lastRun: null, cards: null, NAMES: {}, RANGES: {}, P: null, text: [] };
+const st = { llm: true, session: null, sim: false, stage: 'describe', settings: {}, askedConfig: false, baselineDone: false, ranked: [], shown: new Set(), looks: {}, cur: null, lastRun: null, cards: null, NAMES: {}, RANGES: {}, P: null, text: [] };
 get('/api/info').then(i => { if (i) st.learn = i.learn; });
 const LABEL = k => (st.RANGES[k]?.label || k).replace(/ \(.*\)/, '').replace(/^./, c => c.toUpperCase());
-const fmea = body => post('/api/fmea', { session: st.session, ...body });
+const fmea = body => post('/api/fmea', { session: st.session, llm: st.llm, ...body });
+// "Language model" switch: compare the replies of the symptom graph alone with the replies of the symptom graph + language model
+try { const v = localStorage.getItem('repair_llm'); if (v !== null) st.llm = v === '1'; } catch (e) {}
+$('#llm').checked = st.llm;
+$('#llm').onchange = async e => {
+  st.llm = e.target.checked; try { localStorage.setItem('repair_llm', st.llm ? '1' : '0'); } catch (err) {}
+  chat.say(`<span class="tiny mut">Language model switched <b>${st.llm ? 'on' : 'off'}</b>. ${st.llm ? 'Replies come from the symptom graph, then the language model re-ranks the parts.' : 'Replies now come from the symptom graph only.'}</span>`);
+  if (st.session && !st.sim && st.stage === 'describe' && st.cards) {      // show the same case again with the new setting
+    if (st.cards) { st.cards.remove(); st.cards = null; }
+    const done = chat.typing(st.llm ? 'Asking the language model…' : 'Symptom graph only…');
+    const r = await fmea({}); done(); if (r.error) { chat.say(esc(r.error)); return; }
+    st.ranked = r.ranked || []; showWithRefine(r);
+  }
+};
+function byLine(r) {
+  if (r.llm_used) return '<span class="by">Reply by: symptom graph + language model (Qwen)</span>';
+  if (!st.llm) return '<span class="by g">Reply by: symptom graph only (language model switched off)</span>';
+  if (!r.llm_possible) return '<span class="by g">Reply by: symptom graph only (language model not available: start Ollama for full mode)</span>';
+  return '<span class="by g">Reply by: symptom graph only · the language model is still reading…</span>';
+}
+function compareHtml(r) {
+  if (!r.llm_used) return '';
+  const pct = x => Math.round(x.p * 100) + '%';
+  const rows = [0, 1, 2].map(i => `<tr><td>${i + 1}</td><td>${r.graph_only[i] ? esc(r.graph_only[i].name) + ' ' + pct(r.graph_only[i]) : ''}</td><td>${r.llm_top3[i] ? esc(r.llm_top3[i].name) : ''}</td><td>${r.top[i] ? esc(r.top[i].name) + ' ' + pct(r.top[i]) : ''}</td></tr>`).join('');
+  return `<details class="tiny" style="margin:4px 0 6px"><summary>How the language model changed the answer</summary><table class="cmp"><tr><th>#</th><th>Symptom graph only</th><th>Language model's own top 3 (boost ×5, ×3, ×2)</th><th>Final (graph + language model)</th></tr>${rows}</table></details>`;
+}
+// the symptom graph answers at once; with the language model on, its re-ranked answer replaces the first one when it arrives
+function showWithRefine(r) {
+  showCards(r); const shown = st.cards, sid = r.session;
+  if (r.refine) fmea({ refine: true }).then(r2 => { if (r2 && !r2.error && r2.ranked && st.session === sid && st.cards === shown && shown && !st.sim) { st.ranked = r2.ranked; st.cards.remove(); showCards(r2); } }).catch(() => {});
+}
 
 // ---------------- start ----------------
 function welcome() {
@@ -104,7 +137,7 @@ function showCards(r) {
   const card = (g, i) => `<div class="card"><span class="pct">${Math.round(g.p * 100)}%</span><b>${i + 1}. ${esc(g.name)}</b><div>Likely failure: ${esc(g.mode)}</div>` +
     ((g.matched || []).length ? `<div class="tiny mut">You described: ${g.matched.map(esc).join('; ')}</div>` : '') + `<div style="margin-top:4px"><b>Check:</b> ${esc(g.check)}</div><div class="src">Source: ${esc(g.source)}</div><div class="btns" data-part="${g.part}"></div></div>`;
   const sim = (r.similar || [])[0];
-  const m = chat.say(`Check these parts in this order${r.refined ? ' <span class="tiny mut">(refined by the language model)</span>' : ''}:` +
+  const m = chat.say(byLine(r) + `<div>Check these parts in this order:</div>` + compareHtml(r) +
     (sim ? `<div class="src">Similar confirmed case (${Math.round(sim.sim * 100)}% alike): “${esc(sim.text.slice(0, 100))}” → ${esc(sim.part)}</div>` : '') + R.map(card).join(''));
   st.cards = m;
   m.querySelectorAll('.btns[data-part]').forEach(row => { const g = R.find(x => x.part === row.dataset.part);
@@ -205,7 +238,7 @@ function askConfig() {
 }
 async function settingsText(t) {
   if (/\b(don'?t know|do not know|not sure|no idea|skip|continue|default|none|no settings|nothing)\b/i.test(t) || /^(no|nope|n)\.?$/i.test(t.trim())) return finishConfig();
-  const done = chat.typing(); const r = await post('/api/twin/settings', { text: t, state: { settings: st.settings } }); done();
+  const done = chat.typing(); const r = await post('/api/twin/settings', { text: t, llm: st.llm, state: { settings: st.settings } }); done();
   if (r.error) { chat.say(esc(r.error)); return; }
   if (!r.actions.length && !r.rejected.length) { finishConfig(true); return describe(t); }     // not settings: it is the problem description
   if (r.actions.length) { st.settings = r.state.settings || {}; st.baselineDone = false; syncSettings(); run({ fault: '' }); }

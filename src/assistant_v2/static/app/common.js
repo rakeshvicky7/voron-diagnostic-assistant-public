@@ -13,7 +13,7 @@ export function topbar(active, extraHtml = '') {
   const el = $('#top'); if (!el) return;
   el.className = 'top';
   el.innerHTML = `<a class="brand" href="/"><span class="logo">V</span><span>Voron 0.2 Assistant</span></a>
-    <nav class="nav"><a href="/" class="${active === 'home' ? 'on' : ''}">Home</a><a href="/assembly" class="${active === 'assembly' ? 'on' : ''}">Assembly</a><a href="/repair" class="${active === 'repair' ? 'on' : ''}">Repair assistant</a></nav>
+    <nav class="nav"><a href="/" class="${active === 'home' ? 'on' : ''}">Home</a><a href="/assembly" class="${active === 'assembly' ? 'on' : ''}">Assembly</a><a href="/repair" class="${active === 'repair' ? 'on' : ''}">Repair assistant</a><a href="/testbench" class="${active === 'testbench' ? 'on' : ''}">Testbench</a></nav>
     <span class="space"></span>${extraHtml}<span class="status" title="The language model (Ollama) improves the answers. Without it the assistant still works."><span class="dot" id="st-dot"></span><span id="st-text">checking…</span></span>`;
   get('/api/info').then(i => { if (!i) { $('#st-text').textContent = 'server not running'; return; }
     $('#st-dot').className = 'dot ' + (i.ollama ? 'on' : 'off'); $('#st-text').textContent = i.ollama ? 'Full mode (language model on)' : /demo/.test(i.model || '') ? 'Basic mode (symptom graph only)' : 'Basic mode (start Ollama for full mode)'; });

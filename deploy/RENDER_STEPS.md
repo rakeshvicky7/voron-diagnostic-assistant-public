@@ -48,6 +48,13 @@ Render's free server is too small to run the model itself, so the online version
 - Free Groq limits (requests per minute and per day) are enough for a demo; heavy use can hit them, and then the assistant falls back to the instant answer.
 - To switch the model off again, set `STUB` back to `1`.
 
+## Testbench page (online)
+`https://YOUR-SERVICE.onrender.com/testbench` (also in the top bar). Type any description and compare:
+- **Analyse: symptom graph only**: symptoms found, ranked parts, and the "why" table (prior x P of each symptom).
+- **Analyse: with language model**: the same, plus the language model's top 3 and the combined ranking. Works only after the Groq setup above; otherwise the button is greyed out.
+
+The online version has no test sets (part 2 is hidden, `TESTBENCH_SETS=0` in the Dockerfile) and no meaning matching (that needs a local Ollama). On your laptop all parts stay available.
+
 ## Make it load faster
 - **Compression (built in):** the server sends the 3D model compressed (23 MB -> about 7 MB) and the browser keeps it for a week, so a second visit loads the 3D view from the browser's own cache.
 - **Stop it from sleeping (free):** create a free account at https://uptimerobot.com (or https://cron-job.org), add an **HTTP monitor** for `https://YOUR-SERVICE.onrender.com/api/info`, interval **10 minutes**. The regular visit keeps the service awake, so nobody waits a minute for it to wake up. One service running all month fits in Render's free hours.

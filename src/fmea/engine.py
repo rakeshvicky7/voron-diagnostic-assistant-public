@@ -36,14 +36,26 @@ QUALITY = ("under_extrusion", "over_extrusion", "layer_shift", "ringing", "strin
 
 USE_PRINTS_FINE = os.environ.get("F_PRINTS_FINE", "0") == "1"
 
+# Version 2 of the reader (F_V2=1, off by default so the thesis results stay unchanged). Five machine-independent fixes
+# found in the error analysis (eval/v2_reader_test.md): stemmer doubled consonants, typo fixer only for real typos,
+# negation words do not count as evidence (all negations read as 'not'), matched words must be close together, 'not' inside the match.
+V2 = os.environ.get("F_V2", "0") == "1"
+V2P = set(os.environ.get("F_V2_PARTS", "stem,typo,strong,close,negin,dup,negnorm").split(",")) if V2 else set()   # which fixes are on (for the ablation)
+NEGW = {"no", "not", "never", "without", "nothing", "n't", "dont", "doesnt", "didnt", "isnt", "wasnt", "cannot", "cant", "won't", "wont"}
+
 def stem(w):
     for suf in ("ings", "ing", "edly", "ed", "es", "s", "ly"):
-        if len(w) > len(suf) + 2 and w.endswith(suf): return w[: -len(suf)]
+        if len(w) > len(suf) + 2 and w.endswith(suf):
+            r = w[: -len(suf)]
+            if 'stem' in V2P and suf in ("ing", "ings", "ed", "edly") and len(r) > 3 and r[-1] == r[-2] and r[-1] not in "aeiouls": r = r[:-1]   # stopped -> stop
+            return r
     return w
 
 def toks(t):
     t = t.lower().replace("-", " ").replace("_", " ")
-    return [stem(w) for w in re.findall(r"[a-z0-9]+(?:'[a-z]+)?", t) if w not in STOP]
+    T = [stem(w) for w in re.findall(r"[a-z0-9]+(?:'[a-z]+)?", t) if w not in STOP]
+    if 'negnorm' in V2P: T = ["not" if w in NEGW or w.endswith("n't") else w for w in T]   # 'no', 'never', "won't" all mean 'not'
+    return T
 
 KLIPPER = [  # Klipper's exact messages -> symptoms (KLP common errors / config reference)
  (r"adc out of ra?n?a?ge|adc (error|out of)", ["adc_error"]), (r"lost communication|timeout with mcu|mcu .{0,20}shutdown", ["lost_comm"]),
@@ -60,6 +72,7 @@ for sid, (q, how, says) in S.items():
     for p in says:
         tk = [w for w in toks(p)]
         if len(tk) == 1 and len(p.split()) > 1: continue          # "after a while" must not shrink to just "after"
+        if 'dup' in V2P and len(set(tk)) == 1 and len(p.split()) > 1: continue   # "worse and worse" must not shrink to just "worse"
         if tk: _PH.append((sid, tk, p))
 VOCAB = sorted({w for _, tk, _ in _PH for w in tk}); _VSET = set(VOCAB)
 
@@ -71,9 +84,19 @@ def _fix_typos(T):
         if len(w) >= 4 and w not in _VSET:
             c = difflib.get_close_matches(w, VOCAB, n=1, cutoff=0.8)
             ok = c and not c[0].startswith(w) and not w.startswith(c[0])   # 'crack' is a word, not a typo of 'crackl(ing)'
+            if 'typo' in V2P and ok: ok = _typo_like(w, c[0])                          # 'strong' is a word, not a typo of 'string'
             out.append(c[0] if ok else w)
         else: out.append(w)
     return out
+
+def _typo_like(a, b):
+    """True for a swapped pair of letters, one letter too many or one too few (real typos); not for a changed letter."""
+    if len(a) == len(b):
+        d = [i for i in range(len(a)) if a[i] != b[i]]
+        return len(d) == 2 and d[1] == d[0] + 1 and a[d[0]] == b[d[1]] and a[d[1]] == b[d[0]]
+    if abs(len(a) - len(b)) != 1: return False
+    s, l = (a, b) if len(a) < len(b) else (b, a)
+    return any(l[:i] + l[i + 1:] == s for i in range(len(l)))
 
 _DF = {}
 for _sid, _tk, _p in _PH:
@@ -82,9 +105,20 @@ IDF = {w: math.log(1 + len(_PH) / n) for w, n in _DF.items()}
 
 TOPIDF = os.environ.get("F_TOPIDF", "0") == "1"   # tested on the dev set: no gain, off
 
+def _close(pos, matched, T, width):
+    """Is there a window of `width` words holding every matched word at least once?"""
+    need = set(matched); best = False
+    for i in range(len(T)):
+        if T[i] not in need: continue
+        if set(w for w in T[i:i + width] if w in need) == need: return True
+    return best
+
 def _negated(text, start):
     left = text[max(0, start - 30):start]
     return bool(NEG.search(left.split(".")[-1].split(",")[-1]))
+
+SEM_ON = os.environ.get("F_SEM", "0") == "1"     # meaning-based matching, off by default (thesis results unchanged)
+SEM_T = float(os.environ.get("F_SEM_T", 0.72))
 
 def link(text, min_cov=float(os.environ.get('F_COV', 0.62))):
     """Returns {symptom id: confidence (0..1, negative = described as NOT happening)}."""
@@ -106,13 +140,28 @@ def link(text, min_cov=float(os.environ.get('F_COV', 0.62))):
             need = set(tk); matched = need & Ts
             if len(need) == 1 and not matched: continue
             if len(need) >= 2 and (len(matched) < 2 or len(matched) / len(need) < float(os.environ.get("F_CNT", 0.6))): continue   # one or two shared words are not a match
+            if V2 and len(need) >= 2:
+                strong = [w for w in matched if w not in NEGW]
+                if 'strong' in V2P and len(strong) < min(2, len([w for w in need if w not in NEGW])): continue   # 'extruder' + 'not' is not 'extruder not heating'
+                pos = [i for i, w in enumerate(T) if w in matched]
+                if 'close' in V2P and not _close(pos, matched, T, len(need) + 3): continue                                       # the words must stand close together
             if TOPIDF and len(need) >= 2 and max(need, key=lambda w: IDF.get(w, 1)) not in matched: continue   # the phrase's most specific word must be there
             hit = sum(IDF.get(w, 1) for w in matched) / sum(IDF.get(w, 1) for w in need)   # rare words count more
             if hit < (0.85 if S[sid][1] == "context" else min_cov): continue     # context claims need a closer match
             conf = 0.55 + 0.45 * hit if len(need) > 1 else 0.6
             first = min(i for i, w in enumerate(T) if w in matched)
             if any(first - 3 <= j < first and T[j] not in need for j in neg_at): conf = -conf   # "without any change" (but "no plastic comes out" is the symptom itself)
+            elif 'negin' in V2P and len(need) >= 2 and conf > 0:                       # "the fan is not spinning": 'not' between the matched words
+                pos = [i for i, w in enumerate(T) if w in matched]
+                if any(min(pos) < j < max(pos) and T[j] not in need for j in neg_at) and max(pos) - min(pos) <= len(need) + 3: conf = -conf
             if abs(conf) > abs(out.get(sid, 0)): out[sid] = round(conf, 2)
+    if SEM_ON:                                  # optional: meaning-based matching with embeddings (fmea/semantic.py)
+        try:
+            try: from . import semantic
+            except ImportError: import semantic
+            for sid, c in semantic.match(text, SEM_T).items():
+                if sid not in out: out[sid] = c         # the word matcher keeps priority (and owns 'not')
+        except Exception as e: print("semantic matching skipped:", e)
     return out
 
 # parts the technician names (a hint, not proof: "after I replaced the belts" makes belts more likely)
@@ -242,9 +291,37 @@ def combine(*boosts):
         for p, f in (b or {}).items(): out[p] = out.get(p, 1.0) * f
     return out
 
+# Shared upstream cause (experiment, off by default): when two or more parts that hang on the same supplier (power, signal
+# wire, driver, configuration) are suspected, the supplier gets a share of their score. The edges come from the component
+# graph (data/graph/graph.json; the board/config edges were read automatically from the firmware configuration).
+UP_W = float(os.environ.get("F_UP", 0))
+UP_RELS = {"drives", "reads_signal_of", "configures", "powers", "carries_power_to", "carries_signal_of", "commands", "feeds"}
+_UP = None
+def _upstream():
+    global _UP
+    if _UP is None:
+        import json, pathlib
+        _UP = {}
+        f = pathlib.Path(__file__).resolve().parents[2] / "data" / "graph" / "graph.json"
+        try:
+            for e in json.loads(f.read_text(encoding="utf-8"))["edges"]:
+                if e["rel"] in UP_RELS and e["src"] in _PT and e["dst"] in _PT: _UP.setdefault(e["src"], set()).add(e["dst"])
+        except Exception: pass
+    return _UP
+
+def upstream(pp, w=None):
+    w = UP_W if w is None else w
+    if w <= 0: return pp
+    out = dict(pp)
+    for u, deps in _upstream().items():
+        sc = sorted((pp.get(d, 0) for d in deps), reverse=True)
+        if len(sc) >= 2: out[u] = out.get(u, 0) + w * sum(sc[1:])      # everything but the strongest dependent: needs two suspects
+    z = sum(out.values()) or 1
+    return dict(sorted(((p, v / z) for p, v in out.items()), key=lambda x: -x[1]))
+
 def rank_text(text, k=5, g_top3=None, case_boost=None):
     """One-shot: description -> top-k parts (optionally combined with arm G's top 3 and the case memory)."""
-    _, pp = posterior(link(text), named=mentions(text), boost=combine(boost_from_ranking(g_top3) if g_top3 else None, case_boost)); return list(pp.items())[:k]
+    _, pp = posterior(link(text), named=mentions(text), boost=combine(boost_from_ranking(g_top3) if g_top3 else None, case_boost)); return list(upstream(pp).items())[:k]
 
 if __name__ == "__main__":
     import sys

@@ -15,7 +15,8 @@ RUN gzip -9 -k -f src/assistant_v2/static/cad/voron02r1.glb
 
 # STUB=1: no Ollama in the cloud, the assistant runs on the symptom graph alone.
 # FMEA_NO_LEARN=1: visitors do not change the saved case memory.
-ENV STUB=1 FMEA_NO_LEARN=1 PYTHONUNBUFFERED=1
+# TESTBENCH_SETS=0: the testbench page offers free descriptions only (no test sets online).
+ENV STUB=1 FMEA_NO_LEARN=1 TESTBENCH_SETS=0 PYTHONUNBUFFERED=1
 EXPOSE 7860
 # The host gives the port in $PORT (Render); 7860 otherwise (Hugging Face)
 CMD python -m src.assistant_v2.server --host 0.0.0.0 --port ${PORT:-7860}

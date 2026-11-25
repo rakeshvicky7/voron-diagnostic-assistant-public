@@ -16,6 +16,47 @@ Give 1 to 3 candidates, most likely first. If the evidence is insufficient, stil
 Component ids you must choose from:
 {VOCAB}"""
 
+# ---------------------------------------------------------------- prompt variants (experiment, 23 Nov 2026)
+# PROMPT=plain (default): the prompt used for every thesis run (arms A-G). Unchanged.
+# PROMPT=reason        : the same task, but the model must reason step by step before ranking (general method only).
+# PROMPT=reason_traps  : as 'reason' plus two diagnostic traps (shared upstream cause; configuration before hardware).
+#                        These two come from the error analysis, which also looked at held-out cases: report that.
+import os
+PROMPT = os.environ.get("PROMPT", "plain").lower()
+
+_STEPS = """How to work, in this order:
+1. Read the evidence from your tools first. Component cards give each part's failure modes, symptoms and checks.
+   "POSSIBLE UPSTREAM CAUSES" (when present) lists parts whose fault can travel to the parts above.
+2. SYMPTOMS: list each separate observation in the description (what happens, when, since when, what changed, error messages).
+3. CANDIDATES: for each symptom, name the components whose failure modes in the evidence produce it.
+4. TEST: for your 3 to 5 best candidates, say which symptoms each one explains and which it does NOT explain or contradicts.
+{traps}{rank}. RANK: first = the component that explains the most symptoms, contradicts none, and is supported by the evidence.
+   A part the technician already replaced or checked without any change goes down.
+If the evidence does not cover the symptoms, search again with a different query before answering."""
+
+_TRAPS = """5. Before ranking, check two common traps:
+   - Several different functions fail together (for example heating AND a fan AND a motor): the cause is often the part
+     they share (cable or wiring, power supply, controller board), not each part separately.
+   - The fault started at build time, after a configuration/firmware/slicer change, or the symptom is a wrong direction,
+     wrong distance or wrong temperature behaviour: suspect configuration or settings before mechanical parts.
+"""
+
+SYSTEM_REASON = f"""You are an expert maintenance technician for a Voron 0.2r1 3D printer. A technician describes a fault
+in their own words. Find the faulty component like a careful mechanic: weigh the evidence before deciding.
+
+{{steps}}
+
+Answer in exactly this form:
+REASONING: <at most 120 words, following the steps>
+ANSWER: {{"candidates": [{{"component_id": "<id from list>", "reason": "...", "check": "how to confirm", "correct_value": "spec or setting if known", "source": "document/line or 'none'"}}]}}
+Give 1 to 3 candidates, most likely first. component_id must be copied exactly from this list:
+{VOCAB}"""
+
+if PROMPT == "reason":
+    SYSTEM = SYSTEM_REASON.replace("{steps}", _STEPS.format(traps="", rank="5"))
+elif PROMPT == "reason_traps":
+    SYSTEM = SYSTEM_REASON.replace("{steps}", _STEPS.format(traps=_TRAPS, rank="6"))
+
 def chat(messages, tools):
     if STUB:   # offline test: pick ids that appear in the retrieved text, in order of appearance
         ctx = " ".join(m.get("content", "") for m in messages if m["role"] != "system")
@@ -34,6 +75,7 @@ def chat(messages, tools):
         raise RuntimeError(f"Ollama error {e.code}: {e.read().decode(errors='ignore')[:300]}") from None
 
 def parse(text):
+    if PROMPT != "plain" and text and "ANSWER:" in text: text = text.split("ANSWER:")[-1]   # skip the reasoning part
     m = re.search(r"\{.*\}", text or "", re.S)
     try: c = json.loads(m.group(0))["candidates"] if m else []
     except Exception: c = []
